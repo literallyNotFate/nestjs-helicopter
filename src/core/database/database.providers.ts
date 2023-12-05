@@ -1,3 +1,4 @@
+import { join } from 'path';
 import { DataSource } from 'typeorm';
 
 export const databaseProviders = [
@@ -11,7 +12,7 @@ export const databaseProviders = [
         username: 'postgres',
         password: 'admin',
         database: 'helicopters',
-        entities: ['module/../**/*.entity{.ts,.js}'],
+        entities: [join(__dirname, '**', '*.entity.{ts,js}')],
         synchronize: true,
       });
 
