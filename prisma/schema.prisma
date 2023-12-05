@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Helicopter
+model Helicopter {
+  id         Int                   @id @default(autoincrement())
+  model      String
+  year       Int
+  engine     Engine                @relation(fields: [engineId], references: [id])
+  attributes AttributeHelicopter[]
+  engineId   Int
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt()
+}
+
+// Engine
+model Engine {
+  id          Int          @id @default(autoincrement())
+  name        String
+  year        Int
+  model       String
+  horsePower  Int
+  helicopters Helicopter[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt()
+}
+
+// Attributes
+model Attributes {
+  id          Int                   @id @default(autoincrement())
+  name        String
+  helicopters AttributeHelicopter[]
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt()
+}
+
+// AttributeHelicopter
+model AttributeHelicopter {
+  helicopterId Int
+  attributesId Int
+  value        String
+  helicopter   Helicopter @relation(fields: [helicopterId], references: [id])
+  attribute    Attributes @relation(fields: [attributesId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt()
+
+  @@id([helicopterId, attributesId])
+}
