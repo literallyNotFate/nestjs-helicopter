@@ -1,3 +1,4 @@
+import { Observable } from 'rxjs';
 import { ApiOperation, ApiTags, ApiResponse } from '@nestjs/swagger/dist';
 import {
   Controller,
@@ -45,7 +46,7 @@ export class EngineController {
     description: 'Failed to get engines',
   })
   @Get()
-  findAll(): string {
+  findAll(): Observable<EngineDto[]> {
     return this.engineService.findAll();
   }
 
@@ -60,7 +61,7 @@ export class EngineController {
     description: 'Failed to get engine by ID',
   })
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string): Observable<EngineDto> {
     return this.engineService.findOne(+id);
   }
 
@@ -75,7 +76,10 @@ export class EngineController {
     description: 'Failed to edit engine',
   })
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEngineDto: UpdateEngineDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateEngineDto: UpdateEngineDto,
+  ): Observable<EngineDto> {
     return this.engineService.update(+id, updateEngineDto);
   }
 
@@ -89,7 +93,7 @@ export class EngineController {
     description: 'Failed to delete engine',
   })
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string): Observable<void> {
     return this.engineService.remove(+id);
   }
 }

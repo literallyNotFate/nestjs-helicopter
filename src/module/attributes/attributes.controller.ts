@@ -12,7 +12,7 @@ import {
 import { AttributesService } from './attributes.service';
 import { CreateAttributeDto } from './dto/create-attribute.dto';
 import { UpdateAttributeDto } from './dto/update-attribute.dto';
-import { HelicopterDto } from '../helicopter/dto/helicopter.dto';
+import { AttributesDto } from './dto/attributes.dto';
 
 @ApiTags('Attributes')
 @Controller('attributes')
@@ -24,7 +24,7 @@ export class AttributesController {
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'Attribute was created',
-    type: HelicopterDto,
+    type: AttributesDto,
   })
   @ApiResponse({
     status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -38,7 +38,7 @@ export class AttributesController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Got all attributes',
-    type: [HelicopterDto],
+    type: [AttributesDto],
   })
   @ApiResponse({
     status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -53,7 +53,7 @@ export class AttributesController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Got attribute by ID',
-    type: [HelicopterDto],
+    type: [AttributesDto],
   })
   @ApiResponse({
     status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -68,7 +68,7 @@ export class AttributesController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Attribute was edited',
-    type: HelicopterDto,
+    type: AttributesDto,
   })
   @ApiResponse({
     status: HttpStatus.INTERNAL_SERVER_ERROR,

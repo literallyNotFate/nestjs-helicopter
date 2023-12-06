@@ -7,7 +7,7 @@ export class CreateEngineDto {
     type: String,
     required: true,
   })
-  name: string;
+  name!: string;
 
   @ApiProperty({
     example: 2023,
@@ -15,7 +15,7 @@ export class CreateEngineDto {
     nullable: false,
     required: true,
   })
-  year: number;
+  year!: number;
 
   @ApiProperty({
     example: 'Model ABC',
@@ -32,11 +32,4 @@ export class CreateEngineDto {
     required: true,
   })
   hp!: number;
-
-  @ApiProperty({
-    example: 1,
-    type: Number,
-    nullable: false,
-  })
-  helicopterId?: number;
 }

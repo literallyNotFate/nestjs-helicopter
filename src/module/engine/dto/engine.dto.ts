@@ -38,15 +38,8 @@ export class EngineDto {
   hp!: number;
 
   @ApiPropertyOptional({
-    example: 1,
-    type: Number,
-    nullable: false,
-  })
-  helicopterId!: number;
-
-  @ApiPropertyOptional({
     type: [HelicopterDto],
     isArray: true,
   })
-  helicopters: HelicopterDto[];
+  helicopters?: HelicopterDto[];
 }

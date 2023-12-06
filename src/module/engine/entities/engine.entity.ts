@@ -26,9 +26,6 @@ export class Engine {
   @Column()
   hp: number;
 
-  @Column({ name: 'helicopter_id' })
-  helicopterId: number;
-
   @OneToMany(() => Helicopter, (helicopter) => helicopter.engineId)
   helicopters: Helicopter[];
 
