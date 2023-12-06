@@ -5,6 +5,7 @@ export class CreateHelicopterDto {
     example: 'ABC-1101',
     nullable: false,
     type: String,
+    required: true,
   })
   model!: string;
 
@@ -12,6 +13,7 @@ export class CreateHelicopterDto {
     example: 2023,
     nullable: false,
     type: Number,
+    required: true,
   })
   year!: number;
 

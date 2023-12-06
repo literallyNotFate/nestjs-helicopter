@@ -1,3 +1,4 @@
+import { AttributeHelicopterDto } from './../../attribute-helicopter/dto/attribute-helicopter.dto';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EngineDto } from 'src/module/engine/dto/engine.dto';
 
@@ -34,7 +35,7 @@ export class HelicopterDto {
   })
   year!: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 1,
     type: Number,
   })
@@ -44,4 +45,7 @@ export class HelicopterDto {
     type: () => EngineDto,
   })
   engine?: EngineDto;
+
+  @ApiProperty({ type: [AttributeHelicopterDto], isArray: true })
+  attributes: AttributeHelicopterDto[];
 }

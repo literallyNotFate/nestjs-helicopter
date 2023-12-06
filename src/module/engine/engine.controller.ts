@@ -45,7 +45,7 @@ export class EngineController {
     description: 'Failed to get engines',
   })
   @Get()
-  findAll(): EngineDto {
+  findAll(): string {
     return this.engineService.findAll();
   }
 

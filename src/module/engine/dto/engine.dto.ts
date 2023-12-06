@@ -2,10 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { HelicopterDto } from 'src/module/helicopter/dto/helicopter.dto';
 
 export class EngineDto {
-  @ApiProperty({
-    example: 1,
-    type: Number,
-  })
+  @ApiProperty({ example: 1, type: Number })
   id: number;
 
   @ApiProperty({
@@ -20,29 +17,36 @@ export class EngineDto {
   })
   updatedAt: Date;
 
-  @ApiProperty({
-    example: 'Ultra Engine',
-    nullable: false,
-    type: String,
-  })
+  @ApiProperty({ example: 'Engine XYZ', type: String, nullable: false })
   name!: string;
 
   @ApiProperty({
     example: 2023,
-    nullable: false,
     type: Number,
+    nullable: false,
   })
   year!: number;
 
-  @ApiProperty({
-    example: 'NT-200',
-    nullable: false,
-    type: String,
-  })
+  @ApiProperty({ example: 'Model ABC', type: String, nullable: false })
   model!: string;
 
-  @ApiPropertyOptional({
-    type: () => HelicopterDto,
+  @ApiProperty({
+    example: 300,
+    type: Number,
+    nullable: false,
   })
-  helicopters?: HelicopterDto[];
+  hp!: number;
+
+  @ApiPropertyOptional({
+    example: 1,
+    type: Number,
+    nullable: false,
+  })
+  helicopterId!: number;
+
+  @ApiPropertyOptional({
+    type: [HelicopterDto],
+    isArray: true,
+  })
+  helicopters: HelicopterDto[];
 }
