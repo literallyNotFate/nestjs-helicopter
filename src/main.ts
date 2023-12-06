@@ -9,7 +9,6 @@ async function bootstrap() {
     .setTitle('Helicopters')
     .setDescription('Helicopters API showcase')
     .setVersion('1.0')
-    .addTag('helicopters')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

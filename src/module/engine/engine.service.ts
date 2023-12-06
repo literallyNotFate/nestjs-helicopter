@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateEngineDto } from './dto/create-engine.dto';
 import { UpdateEngineDto } from './dto/update-engine.dto';
+import { EngineDto } from './dto/engine.dto';
 
 @Injectable()
 export class EngineService {
@@ -8,8 +9,15 @@ export class EngineService {
     return 'This action adds a new engine';
   }
 
-  findAll() {
-    return `This action returns all engine`;
+  findAll(): EngineDto {
+    return {
+      id: 123,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      model: 'asd',
+      name: 'asd',
+      year: 123,
+    };
   }
 
   findOne(id: number) {

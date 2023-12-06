@@ -4,15 +4,16 @@ services:
   db:
     image: postgres
     restart: always
-    environment:
-      PG_HOST: localhost
-      PG_PORT: 5432
-      PG_USERNAME: postgres
-      POSTGRES_PASSWORD: admin
-      PG_NAME: helicopters
-
-  adminer:
-    image: adminer
-    restart: always
+    container_name: postgres_db
     ports:
-      - 8080:8080
+      - '5432:5432'
+    environment:
+      POSTGRES_DB: helicopters
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+
+  # adminer:
+  #   image: adminer
+  #   restart: always
+  #   ports:
+  #     - 8080:8080
