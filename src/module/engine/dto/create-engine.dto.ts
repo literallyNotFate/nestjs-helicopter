@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsNotEmpty, IsInt, IsPositive } from 'class-validator';
 
 export class CreateEngineDto {
   @ApiProperty({
@@ -7,6 +8,8 @@ export class CreateEngineDto {
     type: String,
     required: true,
   })
+  @IsString()
+  @IsNotEmpty()
   name!: string;
 
   @ApiProperty({
@@ -15,6 +18,9 @@ export class CreateEngineDto {
     nullable: false,
     required: true,
   })
+  @IsInt()
+  @IsPositive()
+  @IsNotEmpty()
   year!: number;
 
   @ApiProperty({
@@ -23,6 +29,8 @@ export class CreateEngineDto {
     nullable: false,
     required: true,
   })
+  @IsString()
+  @IsNotEmpty()
   model!: string;
 
   @ApiProperty({
@@ -31,5 +39,8 @@ export class CreateEngineDto {
     nullable: false,
     required: true,
   })
+  @IsInt()
+  @IsPositive()
+  @IsNotEmpty()
   hp!: number;
 }
