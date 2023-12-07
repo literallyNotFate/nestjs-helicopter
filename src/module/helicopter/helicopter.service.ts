@@ -149,42 +149,4 @@ export class HelicopterService {
       }),
     );
   }
-
-  // remove(id: number): Observable<void> {
-  //   return from(this.engineRepository.findOne({ where: { id } })).pipe(
-  //     switchMap((found: Engine) => {
-  //       if (!found) {
-  //         throw new NotFoundException(`Engine with ID:${id} was not found.`);
-  //       }
-
-  //       return from(this.engineRepository.remove(found)).pipe(
-  //         switchMap(() => {
-  //           return from(
-  //             this.helicopterRepository.find({
-  //               where: { engineId: id },
-  //             }),
-  //           ).pipe(
-  //             switchMap((helicopters: Helicopter[]) => {
-  //               const updateObservables = helicopters.map((helicopter) => {
-  //                 helicopter.engineId = null;
-
-  //                 return this.helicopterRepository.save(helicopter);
-  //               });
-
-  //               return from(Promise.all(updateObservables));
-  //             }),
-  //           );
-  //         }),
-  //         catchError(() => {
-  //           throw new Error(
-  //             'Failed to remove engine or update related helicopters.',
-  //           );
-  //         }),
-  //       );
-  //     }),
-  //     map(() => {
-  //       return void 0;
-  //     }),
-  //   );
-  // }
 }
