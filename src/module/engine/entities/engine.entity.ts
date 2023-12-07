@@ -26,12 +26,12 @@ export class Engine {
   @Column()
   hp: number;
 
-  @OneToMany(() => Helicopter, (helicopter) => helicopter.engineId)
-  helicopters: Helicopter[];
-
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  @OneToMany(() => Helicopter, (helicopter) => helicopter.engine)
+  helicopters!: Helicopter[];
 }

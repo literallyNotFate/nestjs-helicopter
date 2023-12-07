@@ -9,7 +9,6 @@ import {
   IsString,
   IsOptional,
   IsArray,
-  ValidateNested,
 } from 'class-validator';
 
 @Exclude()
@@ -76,7 +75,6 @@ export class EngineDto {
     type: [HelicopterDto],
     isArray: true,
   })
-  @ValidateNested({ each: true })
   @Type(() => HelicopterDto)
   @IsArray()
   @IsOptional()

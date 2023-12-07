@@ -10,14 +10,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Observable, from, of } from 'rxjs';
 import { EngineDto } from './dto/engine.dto';
-import { catchError, map, mergeMap, take } from 'rxjs/operators';
+import { catchError, map, mergeMap, switchMap, take } from 'rxjs/operators';
 import { plainToInstance } from 'class-transformer';
+import { Helicopter } from '../helicopter/entities/helicopter.entity';
 
 @Injectable()
 export class EngineService {
   constructor(
     @InjectRepository(Engine)
     private readonly engineRepository: Repository<Engine>,
+    @InjectRepository(Helicopter)
+    private readonly helicopterRepository: Repository<Helicopter>,
   ) {}
 
   create(createEngineDto: CreateEngineDto): Observable<EngineDto> {
@@ -32,26 +35,32 @@ export class EngineService {
   }
 
   findAll(): Observable<EngineDto[]> {
-    return from(this.engineRepository.find()).pipe(
-      map((engines: Engine[]) => plainToInstance(EngineDto, engines)),
+    return from(
+      this.engineRepository.find({ relations: ['helicopters'] }),
+    ).pipe(
+      map((engines: Engine[]) =>
+        plainToInstance(EngineDto, engines, { excludeExtraneousValues: true }),
+      ),
       catchError(() => {
-        throw new InternalServerErrorException('Failed to get all engines.');
+        throw new InternalServerErrorException('Failed to get engines.');
       }),
     );
   }
 
   findOne(id: number): Observable<EngineDto> {
-    return from(this.engineRepository.findOne({ where: { id } })).pipe(
+    return from(
+      this.engineRepository.findOne({
+        where: { id },
+        relations: ['helicopters'],
+      }),
+    ).pipe(
       take(1),
-      mergeMap((engine: Engine) => {
-        if (!engine) {
-          throw new NotFoundException(`Engine with ID:${id} was not found`);
+      mergeMap((found: Engine) => {
+        if (!found) {
+          throw new NotFoundException(`Engine with ID:${id} was not found.`);
         }
 
-        return of(plainToInstance(EngineDto, engine));
-      }),
-      catchError(() => {
-        throw new NotFoundException(`Engine with ID:${id} was not found`);
+        return of(plainToInstance(EngineDto, found));
       }),
     );
   }
@@ -65,7 +74,7 @@ export class EngineService {
       take(1),
       mergeMap((found: Engine) => {
         if (!found) {
-          throw new NotFoundException(`Engine with ID:${id} was not found`);
+          throw new NotFoundException(`Engine with ID:${id} was not found.`);
         }
 
         this.engineRepository.merge(found, updateEngineDto);
@@ -73,7 +82,7 @@ export class EngineService {
         return from(this.engineRepository.save(found)).pipe(
           map((result) => plainToInstance(EngineDto, result)),
           catchError(() => {
-            throw new InternalServerErrorException('Failed to update engine');
+            throw new InternalServerErrorException('Failed to update engine.');
           }),
         );
       }),
@@ -81,15 +90,23 @@ export class EngineService {
   }
 
   remove(id: number): Observable<void> {
-    return from(this.engineRepository.findOne({ where: { id } })).pipe(
-      mergeMap((found: Engine) => {
+    return from(
+      this.engineRepository.findOne({
+        where: { id },
+        relations: ['helicopters'],
+      }),
+    ).pipe(
+      switchMap((found: Engine) => {
         if (!found) {
-          throw new NotFoundException(`Engine with ID:${id} was not found`);
+          throw new NotFoundException(`Engine with ID:${id} was not found.`);
         }
 
-        return from(this.engineRepository.remove(found)).pipe(
+        return from(this.helicopterRepository.remove(found.helicopters)).pipe(
+          switchMap(() => this.engineRepository.remove(found)),
           catchError(() => {
-            throw new InternalServerErrorException('Failed to delete engine');
+            throw new InternalServerErrorException(
+              'Failed to delete engine or helicopters.',
+            );
           }),
         );
       }),

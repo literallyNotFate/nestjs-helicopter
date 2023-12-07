@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs';
+import { Observable, from } from 'rxjs';
 import { ApiOperation, ApiTags, ApiResponse } from '@nestjs/swagger/dist';
 import {
   Controller,
@@ -23,7 +23,7 @@ export class EngineController {
   @ApiOperation({ summary: 'Endpoint to create engine' })
   @ApiResponse({
     status: HttpStatus.CREATED,
-    description: 'Helicopter was created',
+    description: 'Engine was created',
     type: EngineDto,
   })
   @ApiResponse({
@@ -32,7 +32,7 @@ export class EngineController {
   })
   @Post()
   create(@Body() createEngineDto: CreateEngineDto) {
-    return this.engineService.create(createEngineDto);
+    return from(this.engineService.create(createEngineDto));
   }
 
   @ApiOperation({ summary: 'Endpoint to get all engines' })
@@ -47,7 +47,7 @@ export class EngineController {
   })
   @Get()
   findAll(): Observable<EngineDto[]> {
-    return this.engineService.findAll();
+    return from(this.engineService.findAll());
   }
 
   @ApiOperation({ summary: 'Endpoint to get engine by ID' })
@@ -62,7 +62,7 @@ export class EngineController {
   })
   @Get(':id')
   findOne(@Param('id') id: string): Observable<EngineDto> {
-    return this.engineService.findOne(+id);
+    return from(this.engineService.findOne(+id));
   }
 
   @ApiOperation({ summary: 'Endpoint to edit engine by ID' })
@@ -80,7 +80,7 @@ export class EngineController {
     @Param('id') id: string,
     @Body() updateEngineDto: UpdateEngineDto,
   ): Observable<EngineDto> {
-    return this.engineService.update(+id, updateEngineDto);
+    return from(this.engineService.update(+id, updateEngineDto));
   }
 
   @ApiOperation({ summary: 'Endpoint to delete engine by ID' })

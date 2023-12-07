@@ -27,8 +27,8 @@ export class AttributeHelicopter {
   @Column({ primary: true })
   helicopterId: number;
 
-  @ManyToOne(() => Helicopter, (helicopter) => helicopter.attributes)
-  helicopter: Helicopter;
+  // @ManyToOne(() => Helicopter, (helicopter) => helicopter.attributes)
+  // helicopter: Helicopter;
 
   @Column({ primary: true })
   attributesId: number;

@@ -6,6 +6,8 @@ import {
   UpdateDateColumn,
   ManyToOne,
   OneToMany,
+  Index,
+  JoinColumn,
 } from 'typeorm';
 
 import { Engine } from 'src/module/engine/entities/engine.entity';
@@ -28,15 +30,17 @@ export class Helicopter {
   @Column()
   year: number;
 
-  @Column({ name: 'engine_id' })
-  engineId: number;
+  @Column({ name: 'engine_id', nullable: false })
+  @Index()
+  engineId!: number;
 
-  @ManyToOne(() => Engine, (engine) => engine.helicopters)
-  engine: Engine;
+  @ManyToOne(() => Engine, (engine) => engine.id, { eager: true })
+  @JoinColumn({ name: 'engine_id' })
+  engine?: Engine;
 
-  @OneToMany(
-    () => AttributeHelicopter,
-    (attributeHelicopter) => attributeHelicopter.helicopter,
-  )
-  attributes: AttributeHelicopter[];
+  // @OneToMany(
+  //   () => AttributeHelicopter,
+  //   (attributeHelicopter) => attributeHelicopter.helicopter,
+  // )
+  // attributes: AttributeHelicopter[];
 }

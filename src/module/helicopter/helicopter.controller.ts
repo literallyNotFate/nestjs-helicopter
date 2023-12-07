@@ -1,3 +1,4 @@
+import { Observable, from } from 'rxjs';
 import {
   Controller,
   Get,
@@ -30,8 +31,10 @@ export class HelicopterController {
     description: 'Failed to create helicopter',
   })
   @Post()
-  create(@Body() createHelicopterDto: CreateHelicopterDto) {
-    return this.helicopterService.create(createHelicopterDto);
+  create(
+    @Body() createHelicopterDto: CreateHelicopterDto,
+  ): Observable<HelicopterDto> {
+    return from(this.helicopterService.create(createHelicopterDto));
   }
 
   @ApiOperation({ summary: 'Endpoint to get all helicopters' })
@@ -45,8 +48,8 @@ export class HelicopterController {
     description: 'Failed to get helicopters',
   })
   @Get()
-  findAll() {
-    return this.helicopterService.findAll();
+  findAll(): Observable<HelicopterDto[]> {
+    return from(this.helicopterService.findAll());
   }
 
   @ApiOperation({ summary: 'Endpoint to get helicopter by ID' })
@@ -60,8 +63,8 @@ export class HelicopterController {
     description: 'Failed to get helicopter by ID',
   })
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.helicopterService.findOne(+id);
+  findOne(@Param('id') id: string): Observable<HelicopterDto> {
+    return from(this.helicopterService.findOne(+id));
   }
 
   @ApiOperation({ summary: 'Endpoint to edit helicopter by ID' })
@@ -78,8 +81,8 @@ export class HelicopterController {
   update(
     @Param('id') id: string,
     @Body() updateHelicopterDto: UpdateHelicopterDto,
-  ) {
-    return this.helicopterService.update(+id, updateHelicopterDto);
+  ): Observable<HelicopterDto> {
+    return from(this.helicopterService.update(+id, updateHelicopterDto));
   }
 
   @ApiOperation({ summary: 'Endpoint to delete helicopter by ID' })
@@ -92,7 +95,7 @@ export class HelicopterController {
     description: 'Failed to delete helicopter',
   })
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string): Observable<void> {
     return this.helicopterService.remove(+id);
   }
 }
