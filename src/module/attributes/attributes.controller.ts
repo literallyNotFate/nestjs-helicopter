@@ -13,6 +13,7 @@ import { AttributesService } from './attributes.service';
 import { CreateAttributeDto } from './dto/create-attribute.dto';
 import { UpdateAttributeDto } from './dto/update-attribute.dto';
 import { AttributesDto } from './dto/attributes.dto';
+import { Observable, from } from 'rxjs';
 
 @ApiTags('Attributes')
 @Controller('attributes')
@@ -30,8 +31,10 @@ export class AttributesController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Failed to create attribute',
   })
-  create(@Body() createAttributeDto: CreateAttributeDto) {
-    return this.attributesService.create(createAttributeDto);
+  create(
+    @Body() createAttributeDto: CreateAttributeDto,
+  ): Observable<AttributesDto> {
+    return from(this.attributesService.create(createAttributeDto));
   }
 
   @ApiOperation({ summary: 'Endpoint to get all attributes' })
@@ -45,8 +48,8 @@ export class AttributesController {
     description: 'Failed to get attributes',
   })
   @Get()
-  findAll() {
-    return this.attributesService.findAll();
+  findAll(): Observable<AttributesDto[]> {
+    return from(this.attributesService.findAll());
   }
 
   @ApiOperation({ summary: 'Endpoint to get attribute by ID' })
@@ -60,8 +63,8 @@ export class AttributesController {
     description: 'Failed to get attribute by ID',
   })
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.attributesService.findOne(+id);
+  findOne(@Param('id') id: string): Observable<AttributesDto> {
+    return from(this.attributesService.findOne(+id));
   }
 
   @ApiOperation({ summary: 'Endpoint to edit attribute by ID' })
@@ -78,8 +81,8 @@ export class AttributesController {
   update(
     @Param('id') id: string,
     @Body() updateAttributeDto: UpdateAttributeDto,
-  ) {
-    return this.attributesService.update(+id, updateAttributeDto);
+  ): Observable<AttributesDto> {
+    return from(this.attributesService.update(+id, updateAttributeDto));
   }
 
   @ApiOperation({ summary: 'Endpoint to delete attribute by ID' })
@@ -92,7 +95,7 @@ export class AttributesController {
     description: 'Failed to delete attribute',
   })
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string): Observable<void> {
     return this.attributesService.remove(+id);
   }
 }

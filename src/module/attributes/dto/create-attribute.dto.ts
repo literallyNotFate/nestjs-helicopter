@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsNotEmpty } from 'class-validator';
 
 export class CreateAttributeDto {
   @ApiProperty({
@@ -7,5 +8,7 @@ export class CreateAttributeDto {
     type: String,
     required: true,
   })
+  @IsString()
+  @IsNotEmpty()
   name!: string;
 }

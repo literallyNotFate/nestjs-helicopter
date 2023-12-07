@@ -26,9 +26,20 @@ export class CreateHelicopterDto {
   @ApiProperty({
     example: 1,
     type: Number,
+    required: true,
   })
   @IsInt()
   @IsPositive()
   @IsNotEmpty()
   engineId!: number;
+
+  @ApiProperty({
+    example: 1,
+    type: Number,
+    required: true,
+  })
+  @IsInt()
+  @IsPositive()
+  @IsNotEmpty()
+  attributeHelicopterId!: number;
 }
