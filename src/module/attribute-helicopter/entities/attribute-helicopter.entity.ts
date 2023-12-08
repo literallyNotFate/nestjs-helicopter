@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   PrimaryGeneratedColumn,
+  JoinColumn,
 } from 'typeorm';
 
 import { Attribute } from 'src/module/attributes/entities/attribute.entity';
@@ -24,15 +25,11 @@ export class AttributeHelicopter {
   @Column()
   value: string;
 
-  @Column({ primary: true })
-  helicopterId: number;
-
-  // @ManyToOne(() => Helicopter, (helicopter) => helicopter.attributes)
-  // helicopter: Helicopter;
-
-  @Column({ primary: true })
-  attributesId: number;
+  @ManyToOne(() => Helicopter, (helicopter) => helicopter.attributes)
+  @JoinColumn({ name: 'helicopter_id' })
+  helicopter: Helicopter;
 
   @ManyToOne(() => Attribute, (attributes) => attributes.helicopters)
+  @JoinColumn({ name: 'attribute_id' })
   attribute: Attribute;
 }

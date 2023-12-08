@@ -13,6 +13,7 @@ import { AttributeHelicopterService } from './attribute-helicopter.service';
 import { CreateAttributeHelicopterDto } from './dto/create-attribute-helicopter.dto';
 import { UpdateAttributeHelicopterDto } from './dto/update-attribute-helicopter.dto';
 import { AttributeHelicopterDto } from './dto/attribute-helicopter.dto';
+// import { Observable, from } from 'rxjs';
 
 @ApiTags('Attribute Helicopter')
 @Controller('attribute-helicopter')
@@ -32,7 +33,9 @@ export class AttributeHelicopterController {
     description: 'Failed to create helicopter attribute',
   })
   @Post()
-  create(@Body() createAttributeHelicopterDto: CreateAttributeHelicopterDto) {
+  create(
+    @Body() createAttributeHelicopterDto: CreateAttributeHelicopterDto,
+  ): string {
     return this.attributeHelicopterService.create(createAttributeHelicopterDto);
   }
 

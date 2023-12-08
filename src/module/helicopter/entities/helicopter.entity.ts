@@ -38,9 +38,9 @@ export class Helicopter {
   @JoinColumn({ name: 'engine_id' })
   engine?: Engine;
 
-  // @OneToMany(
-  //   () => AttributeHelicopter,
-  //   (attributeHelicopter) => attributeHelicopter.helicopter,
-  // )
-  // attributes: AttributeHelicopter[];
+  @OneToMany(
+    () => AttributeHelicopter,
+    (attributeHelicopter) => attributeHelicopter.helicopter,
+  )
+  attributes: AttributeHelicopter[];
 }

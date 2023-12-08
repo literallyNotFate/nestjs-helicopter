@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsNotEmpty, IsInt, IsPositive } from 'class-validator';
 
 export class CreateAttributeHelicopterDto {
   @ApiProperty({
@@ -7,15 +8,20 @@ export class CreateAttributeHelicopterDto {
     required: true,
     nullable: false,
   })
+  @IsString()
+  @IsNotEmpty()
   value!: string;
 
-  @ApiProperty({
-    example: 1,
-    type: Number,
-    nullable: false,
-    required: true,
-  })
-  helicopterId!: number;
+  // @ApiPropertyOptional({
+  //   example: 1,
+  //   type: Number,
+  //   nullable: true,
+  // })
+  // @IsOptional()
+  // @IsInt()
+  // @IsPositive()
+  // @IsNotEmpty()
+  // helicopterId?: number;
 
   @ApiProperty({
     example: 1,
@@ -23,5 +29,8 @@ export class CreateAttributeHelicopterDto {
     nullable: false,
     required: true,
   })
+  @IsInt()
+  @IsPositive()
+  @IsNotEmpty()
   attributeId: number;
 }

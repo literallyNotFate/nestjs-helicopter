@@ -83,10 +83,10 @@ export class HelicopterDto {
   @Expose()
   engine?: EngineDto;
 
-  // @ApiProperty({ type: [AttributeHelicopterDto], isArray: true })
-  // @ValidateNested({ each: true })
-  // @Type(() => AttributeHelicopterDto)
-  // @IsArray()
-  // @Expose()
-  // attributes: AttributeHelicopterDto[];
+  @ApiProperty({ type: [AttributeHelicopterDto], isArray: true })
+  @ValidateNested({ each: true })
+  @Type(() => AttributeHelicopterDto)
+  @IsArray()
+  @Expose()
+  attributes: AttributeHelicopterDto[];
 }

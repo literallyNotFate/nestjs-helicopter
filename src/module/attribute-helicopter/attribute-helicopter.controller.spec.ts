@@ -11,7 +11,9 @@ describe('AttributeHelicopterController', () => {
       providers: [AttributeHelicopterService],
     }).compile();
 
-    controller = module.get<AttributeHelicopterController>(AttributeHelicopterController);
+    controller = module.get<AttributeHelicopterController>(
+      AttributeHelicopterController,
+    );
   });
 
   it('should be defined', () => {
