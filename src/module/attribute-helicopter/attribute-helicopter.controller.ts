@@ -101,7 +101,7 @@ export class AttributeHelicopterController {
     description: 'Failed to delete helicopter attribute',
   })
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string): Observable<void> {
     return this.attributeHelicopterService.remove(+id);
   }
 }

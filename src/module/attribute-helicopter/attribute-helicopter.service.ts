@@ -12,6 +12,7 @@ import { Observable, catchError, from, map, switchMap, take } from 'rxjs';
 import { Repository, In } from 'typeorm';
 import { AttributeHelicopter } from './entities/attribute-helicopter.entity';
 import { Attribute } from '../attributes/entities/attribute.entity';
+import { Helicopter } from '../helicopter/entities/helicopter.entity';
 
 @Injectable()
 export class AttributeHelicopterService {
@@ -20,6 +21,8 @@ export class AttributeHelicopterService {
     private readonly attributeHelicopterRepository: Repository<AttributeHelicopter>,
     @InjectRepository(Attribute)
     private readonly attributeRepository: Repository<Attribute>,
+    @InjectRepository(Helicopter)
+    private readonly helicopterRepository: Repository<Helicopter>,
   ) {}
 
   create(
@@ -167,7 +170,40 @@ export class AttributeHelicopterService {
     );
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} attributeHelicopter`;
+  remove(id: number): Observable<void> {
+    return from(
+      this.attributeHelicopterRepository.findOne({
+        where: { id },
+        relations: ['attributes'],
+      }),
+    ).pipe(
+      switchMap((found: AttributeHelicopter) => {
+        if (!found) {
+          throw new NotFoundException(
+            `AttributeHelicopter with ID:${id} was not found.`,
+          );
+        }
+
+        const attributeIds = found.attributes.map((attr) => attr.id);
+
+        return from(
+          this.attributeHelicopterRepository
+            .createQueryBuilder('ah')
+            .relation(AttributeHelicopter, 'attributes')
+            .of(found)
+            .remove(attributeIds)
+            .then(async () => {
+              await this.attributeHelicopterRepository.remove(found);
+              await this.attributeRepository.delete(attributeIds);
+            })
+            .catch(() => {
+              throw new InternalServerErrorException(
+                'Failed to delete attribute helicopter or attributes.',
+              );
+            }),
+        );
+      }),
+      map(() => void 0),
+    );
   }
 }
