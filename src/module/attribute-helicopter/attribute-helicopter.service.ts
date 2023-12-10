@@ -1,18 +1,16 @@
+import { AttributesDto } from 'src/module/attributes/dto/attributes.dto';
 import { plainToInstance } from 'class-transformer';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  Injectable,
-  NotFoundException,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateAttributeHelicopterDto } from './dto/create-attribute-helicopter.dto';
 import { UpdateAttributeHelicopterDto } from './dto/update-attribute-helicopter.dto';
-import { AttributeHelicopterDto } from './dto/attribute-helicopter.dto';
-import { Observable, catchError, from, map, mergeMap } from 'rxjs';
+import { AttributeHelicopterResponseDto } from './dto/attribute-helicopter.dto';
+import { Observable, catchError, from, map, switchMap } from 'rxjs';
 import { Repository } from 'typeorm';
 import { AttributeHelicopter } from './entities/attribute-helicopter.entity';
 import { Attribute } from '../attributes/entities/attribute.entity';
-import { Helicopter } from '../helicopter/entities/helicopter.entity';
+import { HelicopterDto } from '../helicopter/dto/helicopter.dto';
+import { In } from 'typeorm';
 
 @Injectable()
 export class AttributeHelicopterService {
@@ -21,62 +19,76 @@ export class AttributeHelicopterService {
     private readonly attributeHelicopterRepository: Repository<AttributeHelicopter>,
     @InjectRepository(Attribute)
     private readonly attributeRepository: Repository<Attribute>,
-    @InjectRepository(Helicopter)
-    private readonly helicopterRepository: Repository<Helicopter>,
   ) {}
 
-  create(createAttributeHelicopterDto: CreateAttributeHelicopterDto): string {
-    // const { helicopterId, attributeId } = createAttributeHelicopterDto;
-    // return from(
-    //   this.helicopterRepository.findOne({ where: { id: helicopterId } }),
-    // ).pipe(
-    //   mergeMap((found: Helicopter) => {
-    //     if (!found) {
-    //       throw new NotFoundException(
-    //         `Helicopter with ID:${helicopterId} was not found.`,
-    //       );
-    //     }
-    //     return from(
-    //       this.attributeRepository.findOne({ where: { id: attributeId } }),
-    //     ).pipe(
-    //       mergeMap((found: Attribute) => {
-    //         if (!found) {
-    //           throw new NotFoundException(
-    //             `Attribute with ID:${attributeId} was not found.`,
-    //           );
-    //         }
-    //         const newAttributeHelicopter =
-    //           this.attributeHelicopterRepository.create(
-    //             createAttributeHelicopterDto,
-    //           );
-    //         return from(
-    //           this.attributeHelicopterRepository.save(newAttributeHelicopter),
-    //         ).pipe(
-    //           map((saved: AttributeHelicopter) =>
-    //             plainToInstance(AttributeHelicopterDto, saved),
-    //           ),
-    //           catchError(() => {
-    //             throw new InternalServerErrorException(
-    //               `Failed to create Attribute Helicopter`,
-    //             );
-    //           }),
-    //         );
-    //       }),
-    //       catchError(() => {
-    //         throw new Error(`Failed to find Attribute`);
-    //       }),
-    //     );
-    //   }),
-    //   catchError(() => {
-    //     throw new Error(`Failed to find Helicopter`);
-    //   }),
-    // );
+  create(
+    createAttributeHelicopterDto: CreateAttributeHelicopterDto,
+  ): Observable<AttributeHelicopterResponseDto> {
+    const { attributeIds, values } = createAttributeHelicopterDto;
 
-    return '';
+    return from(
+      this.attributeRepository.find({
+        where: { id: In(attributeIds) },
+      }),
+    ).pipe(
+      switchMap((attributes: Attribute[]) => {
+        if (attributes.length !== attributeIds.length) {
+          throw new InternalServerErrorException(
+            'Some attributeIds are invalid',
+          );
+        }
+
+        if (attributes.length !== values.length) {
+          throw new InternalServerErrorException(
+            'attributeIds and values arrays must have the same length',
+          );
+        }
+
+        const newAttributeHelicopter =
+          this.attributeHelicopterRepository.create({
+            values,
+            attributes,
+          });
+
+        return from(
+          this.attributeHelicopterRepository.save(newAttributeHelicopter),
+        ).pipe(
+          map((createdAttributeHelicopter: AttributeHelicopter) => {
+            const responseDto = new AttributeHelicopterResponseDto();
+            responseDto.id = createdAttributeHelicopter.id;
+            responseDto.createdAt = createdAttributeHelicopter.createdAt;
+            responseDto.updatedAt = createdAttributeHelicopter.updatedAt;
+
+            responseDto.attributeHelicopter =
+              createdAttributeHelicopter.attributes.map((attr, index) => ({
+                attributeId: attr.id,
+                attribute: plainToInstance(AttributesDto, attributes[index]),
+                value: values[index],
+              }));
+
+            responseDto.helicopters = plainToInstance(
+              HelicopterDto,
+              createdAttributeHelicopter.helicopters,
+            );
+
+            return responseDto;
+          }),
+          catchError(() => {
+            throw new InternalServerErrorException(
+              'Failed to create attribute helicopter',
+            );
+          }),
+        );
+      }),
+    );
   }
 
   findAll() {
-    return `This action returns all attributeHelicopter`;
+    return from(
+      this.attributeHelicopterRepository.find({
+        relations: ['attributes'],
+      }),
+    ).pipe(map((values) => console.log(values)));
   }
 
   findOne(id: number) {

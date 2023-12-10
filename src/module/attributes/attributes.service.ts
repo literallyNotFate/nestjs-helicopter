@@ -1,5 +1,6 @@
 import { plainToInstance } from 'class-transformer';
 import { InjectRepository } from '@nestjs/typeorm';
+import { In } from 'typeorm';
 import {
   Injectable,
   InternalServerErrorException,
@@ -54,6 +55,19 @@ export class AttributesService {
       catchError(() => {
         throw new InternalServerErrorException(
           `Failed to get attribute by ID.`,
+        );
+      }),
+    );
+  }
+
+  findByIds(ids: number[]): Observable<AttributesDto[]> {
+    return from(this.attributeRepository.find({ where: { id: In(ids) } })).pipe(
+      map((attributes: Attribute[]) =>
+        plainToInstance(AttributesDto, attributes),
+      ),
+      catchError(() => {
+        throw new InternalServerErrorException(
+          'Failed to get attributes by ids.',
         );
       }),
     );

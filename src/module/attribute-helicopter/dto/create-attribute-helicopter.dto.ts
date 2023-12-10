@@ -1,36 +1,26 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsInt, IsPositive } from 'class-validator';
+import { IsArray, ArrayNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateAttributeHelicopterDto {
   @ApiProperty({
-    example: 'Value XYZ',
-    type: String,
+    type: [Number],
+    example: [1, 2, 3],
     required: true,
     nullable: false,
   })
-  @IsString()
-  @IsNotEmpty()
-  value!: string;
-
-  // @ApiPropertyOptional({
-  //   example: 1,
-  //   type: Number,
-  //   nullable: true,
-  // })
-  // @IsOptional()
-  // @IsInt()
-  // @IsPositive()
-  // @IsNotEmpty()
-  // helicopterId?: number;
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsNumber({}, { each: true })
+  attributeIds: number[];
 
   @ApiProperty({
-    example: 1,
-    type: Number,
-    nullable: false,
+    type: [String],
+    example: ['Red', 'Fast', 'Heavy'],
     required: true,
+    nullable: false,
   })
-  @IsInt()
-  @IsPositive()
-  @IsNotEmpty()
-  attributeId: number;
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsString({ each: true })
+  values: string[];
 }

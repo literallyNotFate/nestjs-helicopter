@@ -5,9 +5,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   ManyToOne,
-  OneToMany,
+  ManyToMany,
   Index,
   JoinColumn,
+  JoinTable,
 } from 'typeorm';
 
 import { Engine } from 'src/module/engine/entities/engine.entity';
@@ -38,9 +39,7 @@ export class Helicopter {
   @JoinColumn({ name: 'engine_id' })
   engine?: Engine;
 
-  @OneToMany(
-    () => AttributeHelicopter,
-    (attributeHelicopter) => attributeHelicopter.helicopter,
-  )
-  attributes: AttributeHelicopter[];
+  @ManyToMany(() => AttributeHelicopter)
+  @JoinTable()
+  attributeHelicopters: AttributeHelicopter[];
 }

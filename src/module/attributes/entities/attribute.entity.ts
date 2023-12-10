@@ -4,7 +4,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-  OneToMany,
+  ManyToMany,
 } from 'typeorm';
 
 import { AttributeHelicopter } from 'src/module/attribute-helicopter/entities/attribute-helicopter.entity';
@@ -17,11 +17,11 @@ export class Attribute {
   @Column()
   name: string;
 
-  @OneToMany(
+  @ManyToMany(
     () => AttributeHelicopter,
-    (attributeHelicopter) => attributeHelicopter.attribute,
+    (attributeHelicopter) => attributeHelicopter.attributes,
   )
-  helicopters: AttributeHelicopter[];
+  attributeHelicopters: AttributeHelicopter[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

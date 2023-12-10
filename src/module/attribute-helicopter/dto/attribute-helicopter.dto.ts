@@ -21,18 +21,6 @@ export class AttributeHelicopterDto {
 
   @ApiProperty({
     example: 1,
-    nullable: false,
-    type: Number,
-  })
-  helicopterId: number;
-
-  @ApiPropertyOptional({
-    type: HelicopterDto,
-  })
-  helicopter: HelicopterDto;
-
-  @ApiProperty({
-    example: 1,
     type: Number,
     nullable: false,
   })
@@ -42,4 +30,25 @@ export class AttributeHelicopterDto {
     type: AttributesDto,
   })
   attribute?: AttributesDto;
+}
+
+export class AttributeHelicopterResponseDto {
+  @ApiProperty({ example: 1, type: Number })
+  id: number;
+
+  @ApiProperty({ example: '2023-05-12T13:55:37.839Z', type: Date })
+  createdAt: Date;
+
+  @ApiProperty({ example: '2023-05-12T13:55:37.839Z', type: Date })
+  updatedAt: Date;
+
+  @ApiProperty({ type: Object })
+  attributeHelicopter: {
+    attributeId: number;
+    attribute: AttributesDto;
+    value: string;
+  }[];
+
+  @ApiProperty({ type: [HelicopterDto] })
+  helicopters: HelicopterDto[];
 }

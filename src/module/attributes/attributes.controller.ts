@@ -56,7 +56,7 @@ export class AttributesController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Got attribute by ID',
-    type: [AttributesDto],
+    type: AttributesDto,
   })
   @ApiResponse({
     status: HttpStatus.INTERNAL_SERVER_ERROR,

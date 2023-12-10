@@ -56,7 +56,7 @@ export class HelicopterController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Got helicopter by ID',
-    type: [HelicopterDto],
+    type: HelicopterDto,
   })
   @ApiResponse({
     status: HttpStatus.INTERNAL_SERVER_ERROR,

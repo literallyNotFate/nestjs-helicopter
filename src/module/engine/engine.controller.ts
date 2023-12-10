@@ -54,7 +54,7 @@ export class EngineController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Got engine by ID',
-    type: [EngineDto],
+    type: EngineDto,
   })
   @ApiResponse({
     status: HttpStatus.INTERNAL_SERVER_ERROR,

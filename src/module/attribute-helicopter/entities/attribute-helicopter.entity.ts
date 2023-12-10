@@ -1,11 +1,11 @@
 import {
   Column,
   Entity,
-  ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
   PrimaryGeneratedColumn,
-  JoinColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 
 import { Attribute } from 'src/module/attributes/entities/attribute.entity';
@@ -22,14 +22,17 @@ export class AttributeHelicopter {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @Column()
-  value: string;
+  @Column({ type: 'text', array: true, nullable: true })
+  values: string[];
 
-  @ManyToOne(() => Helicopter, (helicopter) => helicopter.attributes)
-  @JoinColumn({ name: 'helicopter_id' })
-  helicopter: Helicopter;
+  @ManyToMany(() => Attribute)
+  @JoinTable({
+    name: 'attribute_helicopter_attributes',
+    joinColumn: { name: 'attribute_helicopter_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'attribute_id', referencedColumnName: 'id' },
+  })
+  attributes: Attribute[];
 
-  @ManyToOne(() => Attribute, (attributes) => attributes.helicopters)
-  @JoinColumn({ name: 'attribute_id' })
-  attribute: Attribute;
+  @ManyToMany(() => Helicopter, (helicopter) => helicopter.attributeHelicopters)
+  helicopters: Helicopter[];
 }

@@ -33,13 +33,13 @@ export class CreateHelicopterDto {
   @IsNotEmpty()
   engineId!: number;
 
-  // @ApiProperty({
-  //   example: 1,
-  //   type: Number,
-  //   required: true,
-  // })
-  // @IsInt()
-  // @IsPositive()
-  // @IsNotEmpty()
-  // attributeHelicopterId!: number;
+  @ApiProperty({
+    example: 1,
+    type: Number,
+    required: true,
+  })
+  @IsInt()
+  @IsPositive()
+  @IsNotEmpty()
+  attributeHelicopterId!: number;
 }
