@@ -52,9 +52,8 @@ export class AttributeHelicopterController {
     description: 'Failed to get helicopter attributes',
   })
   @Get()
-  findAll() {
-    // return from(this.attributeHelicopterService.findAll());
-    return this.attributeHelicopterService.findAll();
+  findAll(): Observable<AttributeHelicopterResponseDto[]> {
+    return from(this.attributeHelicopterService.findAll());
   }
 
   @ApiOperation({ summary: 'Endpoint to get helicopter attribute by ID' })
@@ -68,8 +67,8 @@ export class AttributeHelicopterController {
     description: 'Failed to get helicopter attribute by ID',
   })
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.attributeHelicopterService.findOne(+id);
+  findOne(@Param('id') id: string): Observable<AttributeHelicopterResponseDto> {
+    return from(this.attributeHelicopterService.findOne(+id));
   }
 
   @ApiOperation({ summary: 'Endpoint to edit helicopter attribute by ID' })
