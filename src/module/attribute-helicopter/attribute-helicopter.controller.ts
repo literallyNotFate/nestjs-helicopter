@@ -85,10 +85,9 @@ export class AttributeHelicopterController {
   update(
     @Param('id') id: string,
     @Body() updateAttributeHelicopterDto: UpdateAttributeHelicopterDto,
-  ) {
-    return this.attributeHelicopterService.update(
-      +id,
-      updateAttributeHelicopterDto,
+  ): Observable<AttributeHelicopterResponseDto> {
+    return from(
+      this.attributeHelicopterService.update(+id, updateAttributeHelicopterDto),
     );
   }
 
