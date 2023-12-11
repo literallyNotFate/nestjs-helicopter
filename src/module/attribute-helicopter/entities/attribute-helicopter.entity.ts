@@ -33,6 +33,11 @@ export class AttributeHelicopter {
   })
   attributes: Attribute[];
 
-  @ManyToMany(() => Helicopter, (helicopter) => helicopter.attributeHelicopters)
+  @ManyToMany(() => Helicopter, (helicopter) => helicopter.attributeHelicopter)
+  @JoinTable({
+    name: 'helicopter_attribute_helicopter',
+    joinColumn: { name: 'attribute_helicopter_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'helicopter_id', referencedColumnName: 'id' },
+  })
   helicopters: Helicopter[];
 }

@@ -15,12 +15,13 @@ import {
   from,
   map,
   mergeMap,
-  of,
   switchMap,
-  take,
+  toArray,
 } from 'rxjs';
 import { HelicopterDto } from './dto/helicopter.dto';
 import { Engine } from '../engine/entities/engine.entity';
+import { AttributeHelicopter } from '../attribute-helicopter/entities/attribute-helicopter.entity';
+import { AttributeHelicopterResponseDto } from '../attribute-helicopter/dto/attribute-helicopter.dto';
 
 @Injectable()
 export class HelicopterService {
@@ -29,15 +30,44 @@ export class HelicopterService {
     private readonly helicopterRepository: Repository<Helicopter>,
     @InjectRepository(Engine)
     private readonly engineRepository: Repository<Engine>,
+    @InjectRepository(AttributeHelicopter)
+    private readonly attributeHelicopterRepository: Repository<AttributeHelicopter>,
   ) {}
 
   create(createHelicopterDto: CreateHelicopterDto): Observable<HelicopterDto> {
-    const newHelicopter = this.helicopterRepository.create(createHelicopterDto);
+    const { attributeHelicopterId, ...rest } = createHelicopterDto;
 
-    return from(this.helicopterRepository.save(newHelicopter)).pipe(
-      map((helicopter: Helicopter) =>
-        plainToInstance(HelicopterDto, helicopter),
-      ),
+    return from(
+      this.attributeHelicopterRepository.findOne({
+        where: { id: attributeHelicopterId },
+        relations: ['attributes'],
+      }),
+    ).pipe(
+      mergeMap((foundAttribute: AttributeHelicopter) => {
+        if (!foundAttribute) {
+          throw new NotFoundException(
+            `AttributeHelicopter with ID:${attributeHelicopterId} was not found.`,
+          );
+        }
+
+        const newHelicopter = this.helicopterRepository.create({
+          ...rest,
+          attributeHelicopter: foundAttribute,
+        });
+
+        return from(this.helicopterRepository.save(newHelicopter)).pipe(
+          map((helicopter: Helicopter) => {
+            const helicopterDto = plainToInstance(HelicopterDto, helicopter);
+
+            if (helicopter.attributeHelicopter) {
+              const attributeHelicopterResponse =
+                AttributeHelicopterResponseDto.ToResponse(foundAttribute);
+              helicopterDto.attributeHelicopter = attributeHelicopterResponse;
+            }
+            return helicopterDto;
+          }),
+        );
+      }),
       catchError(() => {
         throw new InternalServerErrorException('Failed to create helicopter.');
       }),
@@ -46,9 +76,36 @@ export class HelicopterService {
 
   findAll(): Observable<HelicopterDto[]> {
     return from(this.helicopterRepository.find()).pipe(
-      map((helicopters: Helicopter[]) =>
-        plainToInstance(HelicopterDto, helicopters),
+      mergeMap((helicopters: Helicopter[]) =>
+        from(helicopters).pipe(
+          mergeMap((helicopter: Helicopter) =>
+            from(
+              this.attributeHelicopterRepository.findOne({
+                where: { id: helicopter.attributeHelicopterId },
+                relations: ['attributes'],
+              }),
+            ).pipe(
+              map((attributeHelicopter: AttributeHelicopter) => {
+                const helicopterDto = plainToInstance(
+                  HelicopterDto,
+                  helicopter,
+                );
+
+                if (attributeHelicopter) {
+                  const attributeHelicopterResponse =
+                    AttributeHelicopterResponseDto.ToResponse(
+                      attributeHelicopter,
+                    );
+                  helicopterDto.attributeHelicopter =
+                    attributeHelicopterResponse;
+                }
+                return helicopterDto;
+              }),
+            ),
+          ),
+        ),
       ),
+      toArray(),
       catchError(() => {
         throw new InternalServerErrorException(
           'Failed to get all helicopters.',
@@ -59,19 +116,28 @@ export class HelicopterService {
 
   findOne(id: number): Observable<HelicopterDto> {
     return from(this.helicopterRepository.findOne({ where: { id } })).pipe(
-      take(1),
       mergeMap((helicopter: Helicopter) => {
-        if (!helicopter) {
-          throw new NotFoundException(
-            `Helicopter with ID:${id} was not found.`,
-          );
-        }
+        return from(
+          this.attributeHelicopterRepository.findOne({
+            where: { id: helicopter.attributeHelicopterId },
+            relations: ['attributes'],
+          }),
+        ).pipe(
+          map((attributeHelicopter: AttributeHelicopter) => {
+            const helicopterDto = plainToInstance(HelicopterDto, helicopter);
 
-        return of(plainToInstance(HelicopterDto, helicopter));
+            if (attributeHelicopter) {
+              const attributeHelicopterResponse =
+                AttributeHelicopterResponseDto.ToResponse(attributeHelicopter);
+              helicopterDto.attributeHelicopter = attributeHelicopterResponse;
+            }
+            return helicopterDto;
+          }),
+        );
       }),
       catchError(() => {
         throw new InternalServerErrorException(
-          `Failed to get helicopter by ID.`,
+          'Failed to find the helicopter.',
         );
       }),
     );

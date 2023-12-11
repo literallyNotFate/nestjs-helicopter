@@ -5,10 +5,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   ManyToOne,
-  ManyToMany,
   Index,
   JoinColumn,
-  JoinTable,
 } from 'typeorm';
 
 import { Engine } from 'src/module/engine/entities/engine.entity';
@@ -39,7 +37,11 @@ export class Helicopter {
   @JoinColumn({ name: 'engine_id' })
   engine?: Engine;
 
-  @ManyToMany(() => AttributeHelicopter)
-  @JoinTable()
-  attributeHelicopters: AttributeHelicopter[];
+  @Column({ name: 'attribute_helicopter_id', nullable: false })
+  @Index()
+  attributeHelicopterId!: number;
+
+  @ManyToOne(() => AttributeHelicopter, (ah) => ah.id, { eager: true })
+  @JoinColumn({ name: 'attribute_helicopter_id' })
+  attributeHelicopter?: AttributeHelicopter;
 }

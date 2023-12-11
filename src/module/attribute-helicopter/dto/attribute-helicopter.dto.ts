@@ -45,7 +45,7 @@ export class AttributeHelicopterResponseDto {
   updatedAt: Date;
 
   @ApiProperty({ type: Object })
-  attributeHelicopter: {
+  attributes: {
     attributeId: number;
     attribute: AttributesDto;
     value: string;
@@ -62,11 +62,15 @@ export class AttributeHelicopterResponseDto {
     responseDto.createdAt = data.createdAt;
     responseDto.updatedAt = data.updatedAt;
 
-    responseDto.attributeHelicopter = data.attributes.map((attr, index) => ({
-      attributeId: attr.id,
-      attribute: plainToInstance(AttributesDto, attr),
-      value: data.values ? data.values[index] : null,
-    }));
+    if (data.attributes && Array.isArray(data.attributes)) {
+      responseDto.attributes = data.attributes.map((attr, index) => ({
+        attributeId: attr.id,
+        attribute: plainToInstance(AttributesDto, attr),
+        value: data.values ? data.values[index] : null,
+      }));
+    } else {
+      responseDto.attributes = [];
+    }
 
     responseDto.helicopters = plainToInstance(HelicopterDto, data.helicopters);
 

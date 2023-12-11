@@ -1,5 +1,5 @@
 import { Exclude, Expose, Type } from 'class-transformer';
-import { AttributeHelicopterDto } from './../../attribute-helicopter/dto/attribute-helicopter.dto';
+import { AttributeHelicopterResponseDto } from './../../attribute-helicopter/dto/attribute-helicopter.dto';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EngineDto } from 'src/module/engine/dto/engine.dto';
 import {
@@ -8,8 +8,6 @@ import {
   IsDate,
   IsNotEmpty,
   IsString,
-  IsArray,
-  ValidateNested,
   IsObject,
   IsOptional,
 } from 'class-validator';
@@ -83,10 +81,20 @@ export class HelicopterDto {
   @Expose()
   engine?: EngineDto;
 
-  @ApiProperty({ type: [AttributeHelicopterDto], isArray: true })
-  @ValidateNested({ each: true })
-  @Type(() => AttributeHelicopterDto)
-  @IsArray()
+  @ApiPropertyOptional({
+    example: 1,
+    type: Number,
+  })
+  @IsInt()
+  @IsPositive()
+  @IsNotEmpty()
   @Expose()
-  attributes: AttributeHelicopterDto[];
+  attributeHelicopterId!: number;
+
+  @ApiPropertyOptional({ type: () => AttributeHelicopterResponseDto })
+  @Type(() => AttributeHelicopterResponseDto)
+  @IsObject()
+  @IsOptional()
+  @Expose()
+  attributeHelicopter?: AttributeHelicopterResponseDto;
 }
