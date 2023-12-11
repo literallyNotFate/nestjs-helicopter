@@ -150,7 +150,7 @@ export class HelicopterService {
     return from(
       this.helicopterRepository.findOne({
         where: { id },
-        relations: ['engine'],
+        relations: ['engine', 'attributeHelicopter'],
       }),
     ).pipe(
       switchMap((found: Helicopter) => {
@@ -172,18 +172,49 @@ export class HelicopterService {
               );
             }
 
-            found.model = updateHelicopterDto.model;
-            found.year = updateHelicopterDto.year;
-            found.engineId = updateHelicopterDto.engineId;
-            found.engine = engine;
+            return from(
+              this.attributeHelicopterRepository.findOne({
+                where: { id: updateHelicopterDto.attributeHelicopterId },
+                relations: ['attributes'],
+              }),
+            ).pipe(
+              switchMap((attributeHelicopter: AttributeHelicopter) => {
+                if (!attributeHelicopter) {
+                  throw new NotFoundException(
+                    `AttributeHelicopter with ID:${updateHelicopterDto.attributeHelicopterId} was not found.`,
+                  );
+                }
 
-            return from(this.helicopterRepository.save(found)).pipe(
-              map((result: Helicopter) =>
-                plainToInstance(HelicopterDto, result),
-              ),
-              catchError(() => {
-                throw new InternalServerErrorException(
-                  'Failed to update helicopter.',
+                found.model = updateHelicopterDto.model;
+                found.year = updateHelicopterDto.year;
+                found.engineId = updateHelicopterDto.engineId;
+                found.attributeHelicopterId =
+                  updateHelicopterDto.attributeHelicopterId;
+                found.engine = engine;
+                found.attributeHelicopter = attributeHelicopter;
+
+                return from(this.helicopterRepository.save(found)).pipe(
+                  map((result: Helicopter) => {
+                    const helicopterDto = plainToInstance(
+                      HelicopterDto,
+                      result,
+                    );
+
+                    if (found.attributeHelicopter) {
+                      const attributeHelicopterResponse =
+                        AttributeHelicopterResponseDto.ToResponse(
+                          found.attributeHelicopter,
+                        );
+                      helicopterDto.attributeHelicopter =
+                        attributeHelicopterResponse;
+                    }
+                    return helicopterDto;
+                  }),
+                  catchError(() => {
+                    throw new InternalServerErrorException(
+                      'Failed to update helicopter.',
+                    );
+                  }),
                 );
               }),
             );
