@@ -1,5 +1,5 @@
 import { Exclude, Expose, Type } from 'class-transformer';
-import { AttributeHelicopterResponseDto } from './../../attribute-helicopter/dto/attribute-helicopter.dto';
+import { AttributeHelicopterResponseDto } from 'src/module/attribute-helicopter/dto/attribute-helicopter-response.dto';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EngineDto } from 'src/module/engine/dto/engine.dto';
 import {

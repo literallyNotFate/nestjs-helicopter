@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
   ManyToMany,
   JoinTable,
+  OneToMany,
 } from 'typeorm';
 
 import { Attribute } from 'src/module/attributes/entities/attribute.entity';
@@ -33,11 +34,6 @@ export class AttributeHelicopter {
   })
   attributes: Attribute[];
 
-  @ManyToMany(() => Helicopter, (helicopter) => helicopter.attributeHelicopter)
-  @JoinTable({
-    name: 'helicopter_attribute_helicopter',
-    joinColumn: { name: 'attribute_helicopter_id', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'helicopter_id', referencedColumnName: 'id' },
-  })
+  @OneToMany(() => Helicopter, (helicopter) => helicopter.attributeHelicopter)
   helicopters: Helicopter[];
 }

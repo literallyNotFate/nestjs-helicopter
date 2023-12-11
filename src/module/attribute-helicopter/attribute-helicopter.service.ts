@@ -7,12 +7,12 @@ import {
 } from '@nestjs/common';
 import { CreateAttributeHelicopterDto } from './dto/create-attribute-helicopter.dto';
 import { UpdateAttributeHelicopterDto } from './dto/update-attribute-helicopter.dto';
-import { AttributeHelicopterResponseDto } from './dto/attribute-helicopter.dto';
 import { Observable, catchError, from, map, switchMap, take } from 'rxjs';
 import { Repository, In } from 'typeorm';
 import { AttributeHelicopter } from './entities/attribute-helicopter.entity';
 import { Attribute } from '../attributes/entities/attribute.entity';
 import { Helicopter } from '../helicopter/entities/helicopter.entity';
+import { AttributeHelicopterResponseDto } from './dto/attribute-helicopter-response.dto';
 
 @Injectable()
 export class AttributeHelicopterService {
@@ -70,9 +70,11 @@ export class AttributeHelicopterService {
     );
   }
 
-  findAll() {
+  findAll(): Observable<AttributeHelicopterResponseDto[]> {
     return from(
-      this.attributeHelicopterRepository.find({ relations: ['attributes'] }),
+      this.attributeHelicopterRepository.find({
+        relations: ['attributes', 'helicopters'],
+      }),
     ).pipe(
       map((ats: AttributeHelicopter[]) => {
         return ats.map((attributeHelicopter: AttributeHelicopter) =>
@@ -91,7 +93,7 @@ export class AttributeHelicopterService {
     return from(
       this.attributeHelicopterRepository.findOne({
         where: { id },
-        relations: ['attributes'],
+        relations: ['attributes', 'helicopters'],
       }),
     ).pipe(
       take(1),
@@ -137,7 +139,7 @@ export class AttributeHelicopterService {
         return from(
           this.attributeHelicopterRepository.findOne({
             where: { id },
-            relations: ['attributes'],
+            relations: ['attributes', 'helicopters'],
           }),
         ).pipe(
           switchMap((attributeHelicopter: AttributeHelicopter) => {
@@ -174,7 +176,7 @@ export class AttributeHelicopterService {
     return from(
       this.attributeHelicopterRepository.findOne({
         where: { id },
-        relations: ['attributes'],
+        relations: ['attributes', 'helicopters'],
       }),
     ).pipe(
       switchMap((found: AttributeHelicopter) => {
@@ -185,22 +187,23 @@ export class AttributeHelicopterService {
         }
 
         const attributeIds = found.attributes.map((attr) => attr.id);
+        const helicopterIds = found.helicopters.map((heli) => heli.id);
 
-        return from(
-          this.attributeHelicopterRepository
-            .createQueryBuilder('ah')
-            .relation(AttributeHelicopter, 'attributes')
-            .of(found)
-            .remove(attributeIds)
-            .then(async () => {
-              await this.attributeHelicopterRepository.remove(found);
-              await this.attributeRepository.delete(attributeIds);
-            })
-            .catch(() => {
-              throw new InternalServerErrorException(
-                'Failed to delete attribute helicopter or attributes.',
-              );
-            }),
+        return from(this.attributeRepository.delete(attributeIds)).pipe(
+          switchMap(() =>
+            this.helicopterRepository
+              .createQueryBuilder('heli')
+              .delete()
+              .from(Helicopter)
+              .whereInIds(helicopterIds)
+              .execute(),
+          ),
+          switchMap(() => this.attributeHelicopterRepository.remove(found)),
+          catchError(() => {
+            throw new InternalServerErrorException(
+              'Failed to delete helicopters and attributes associated with the attribute helicopter.',
+            );
+          }),
         );
       }),
       map(() => void 0),

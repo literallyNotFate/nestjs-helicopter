@@ -21,7 +21,7 @@ import {
 import { HelicopterDto } from './dto/helicopter.dto';
 import { Engine } from '../engine/entities/engine.entity';
 import { AttributeHelicopter } from '../attribute-helicopter/entities/attribute-helicopter.entity';
-import { AttributeHelicopterResponseDto } from '../attribute-helicopter/dto/attribute-helicopter.dto';
+import { AttributeHelicopterResponseDto } from '../attribute-helicopter/dto/attribute-helicopter-response.dto';
 
 @Injectable()
 export class HelicopterService {

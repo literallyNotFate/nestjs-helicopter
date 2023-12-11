@@ -36,11 +36,11 @@ export class EngineService {
 
   findAll(): Observable<EngineDto[]> {
     return from(
-      this.engineRepository.find({ relations: ['helicopters'] }),
+      this.engineRepository.find({
+        relations: ['helicopters', 'helicopters.attributeHelicopter'],
+      }),
     ).pipe(
-      map((engines: Engine[]) =>
-        plainToInstance(EngineDto, engines, { excludeExtraneousValues: true }),
-      ),
+      map((engines: Engine[]) => plainToInstance(EngineDto, engines)),
       catchError(() => {
         throw new InternalServerErrorException('Failed to get engines.');
       }),
@@ -51,7 +51,7 @@ export class EngineService {
     return from(
       this.engineRepository.findOne({
         where: { id },
-        relations: ['helicopters'],
+        relations: ['helicopters', 'helicopters.attributeHelicopter'],
       }),
     ).pipe(
       take(1),

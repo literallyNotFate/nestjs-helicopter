@@ -41,7 +41,7 @@ export class Helicopter {
   @Index()
   attributeHelicopterId!: number;
 
-  @ManyToOne(() => AttributeHelicopter, (ah) => ah.id, { eager: true })
+  @ManyToOne(() => AttributeHelicopter, (ah) => ah.helicopters, { eager: true })
   @JoinColumn({ name: 'attribute_helicopter_id' })
   attributeHelicopter?: AttributeHelicopter;
 }
