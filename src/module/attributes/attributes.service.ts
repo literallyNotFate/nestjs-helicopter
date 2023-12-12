@@ -70,9 +70,12 @@ export class AttributesService {
           throw new NotFoundException(`Attribute with ID:${id} was not found.`);
         }
 
-        this.attributeRepository.merge(found, updateAttributeDto);
+        const updated = this.attributeRepository.merge(
+          found,
+          updateAttributeDto,
+        );
 
-        return from(this.attributeRepository.save(found)).pipe(
+        return from(this.attributeRepository.save(updated)).pipe(
           map((attribute: Attribute) =>
             plainToInstance(AttributesDto, attribute),
           ),

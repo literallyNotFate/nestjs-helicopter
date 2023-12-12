@@ -9,8 +9,8 @@ import {
   OneToMany,
 } from 'typeorm';
 
-import { Attribute } from 'src/module/attributes/entities/attribute.entity';
-import { Helicopter } from 'src/module/helicopter/entities/helicopter.entity';
+import { Attribute } from '../../attributes/entities/attribute.entity';
+import { Helicopter } from '../../helicopter/entities/helicopter.entity';
 
 @Entity({ name: 'attribute-helicopter' })
 export class AttributeHelicopter {

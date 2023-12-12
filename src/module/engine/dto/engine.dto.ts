@@ -1,6 +1,6 @@
 import { Expose, Type, Exclude } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { HelicopterDto } from 'src/module/helicopter/dto/helicopter.dto';
+import { HelicopterDto } from '../../helicopter/dto/helicopter.dto';
 import {
   IsInt,
   IsPositive,

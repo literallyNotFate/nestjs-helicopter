@@ -1,3 +1,4 @@
+import { AttributeHelicopter } from '../../attribute-helicopter/entities/attribute-helicopter.entity';
 import {
   Column,
   CreateDateColumn,
@@ -6,8 +7,6 @@ import {
   UpdateDateColumn,
   ManyToMany,
 } from 'typeorm';
-
-import { AttributeHelicopter } from 'src/module/attribute-helicopter/entities/attribute-helicopter.entity';
 
 @Entity({ name: 'attributes' })
 export class Attribute {

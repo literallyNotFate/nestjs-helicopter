@@ -9,7 +9,9 @@ describe('AttributeHelicopterService', () => {
       providers: [AttributeHelicopterService],
     }).compile();
 
-    service = module.get<AttributeHelicopterService>(AttributeHelicopterService);
+    service = module.get<AttributeHelicopterService>(
+      AttributeHelicopterService,
+    );
   });
 
   it('should be defined', () => {

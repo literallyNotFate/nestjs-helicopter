@@ -7,7 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 
-import { Helicopter } from 'src/module/helicopter/entities/helicopter.entity';
+import { Helicopter } from '../../helicopter/entities/helicopter.entity';
 
 @Entity({ name: 'engine' })
 export class Engine {

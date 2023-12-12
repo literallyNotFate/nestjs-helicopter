@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { AttributesDto } from 'src/module/attributes/dto/attributes.dto';
-import { HelicopterDto } from 'src/module/helicopter/dto/helicopter.dto';
+import { AttributesDto } from '../../attributes/dto/attributes.dto';
+import { HelicopterDto } from '../../helicopter/dto/helicopter.dto';
 
 export class AttributeHelicopterDto {
   @ApiProperty({ example: 1, type: Number })

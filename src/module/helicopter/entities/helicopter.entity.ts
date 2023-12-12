@@ -9,8 +9,8 @@ import {
   JoinColumn,
 } from 'typeorm';
 
-import { Engine } from 'src/module/engine/entities/engine.entity';
-import { AttributeHelicopter } from 'src/module/attribute-helicopter/entities/attribute-helicopter.entity';
+import { Engine } from '../../engine/entities/engine.entity';
+import { AttributeHelicopter } from '../../attribute-helicopter/entities/attribute-helicopter.entity';
 
 @Entity({ name: 'helicopter' })
 export class Helicopter {
