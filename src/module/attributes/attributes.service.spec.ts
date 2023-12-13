@@ -183,7 +183,7 @@ describe('AttributesService', () => {
     });
 
     it('should throw InternalServerErrorException if an error occurs', async () => {
-      const attributeId = 1;
+      const attributeId: number = 1;
 
       jest
         .spyOn(mockAttributeRepository, 'findOne')
@@ -200,7 +200,7 @@ describe('AttributesService', () => {
 
   describe('update', () => {
     it('should update an attribute', async () => {
-      const attributeId = 1;
+      const attributeId: number = 1;
       const updateAttributeDto: UpdateAttributeDto = {
         name: 'edited',
       };

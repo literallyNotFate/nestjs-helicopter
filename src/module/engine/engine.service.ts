@@ -62,6 +62,9 @@ export class EngineService {
 
         return of(plainToInstance(EngineDto, found));
       }),
+      catchError(() => {
+        throw new InternalServerErrorException('Failed to get engine by ID.');
+      }),
     );
   }
 
@@ -77,9 +80,9 @@ export class EngineService {
           throw new NotFoundException(`Engine with ID:${id} was not found.`);
         }
 
-        this.engineRepository.merge(found, updateEngineDto);
+        const updated = this.engineRepository.merge(found, updateEngineDto);
 
-        return from(this.engineRepository.save(found)).pipe(
+        return from(this.engineRepository.save(updated)).pipe(
           map((result) => plainToInstance(EngineDto, result)),
           catchError(() => {
             throw new InternalServerErrorException('Failed to update engine.');
