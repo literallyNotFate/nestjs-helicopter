@@ -107,9 +107,7 @@ export class HelicopterService {
       ),
       toArray(),
       catchError(() => {
-        throw new InternalServerErrorException(
-          'Failed to get all helicopters.',
-        );
+        throw new InternalServerErrorException('Failed to get all helicopters');
       }),
     );
   }
@@ -187,9 +185,9 @@ export class HelicopterService {
 
                 found.model = updateHelicopterDto.model;
                 found.year = updateHelicopterDto.year;
-                found.engineId = updateHelicopterDto.engineId;
                 found.attributeHelicopterId =
                   updateHelicopterDto.attributeHelicopterId;
+                found.engineId = updateHelicopterDto.engineId;
                 found.engine = engine;
                 found.attributeHelicopter = attributeHelicopter;
 
@@ -207,6 +205,8 @@ export class HelicopterService {
                         );
                       helicopterDto.attributeHelicopter =
                         attributeHelicopterResponse;
+                      helicopterDto.attributeHelicopter.id =
+                        found.attributeHelicopterId;
                     }
                     return helicopterDto;
                   }),

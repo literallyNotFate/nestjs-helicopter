@@ -42,7 +42,15 @@ export class AttributeHelicopterResponseDto {
       responseDto.attributes = [];
     }
 
-    responseDto.helicopters = plainToInstance(HelicopterDto, data.helicopters);
+    if (data.helicopters && Array.isArray(data.helicopters)) {
+      responseDto.helicopters = plainToInstance(
+        HelicopterDto,
+        data.helicopters,
+      );
+    } else {
+      responseDto.helicopters = [];
+    }
+
     return responseDto;
   }
 }

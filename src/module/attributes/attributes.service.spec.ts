@@ -44,19 +44,19 @@ describe('AttributesService', () => {
   });
 
   describe('create', () => {
+    const createAttributeDto: CreateAttributeDto = {
+      name: 'Color',
+    };
+
+    const attributeResult: Attribute = {
+      id: 1,
+      name: 'Color',
+      attributeHelicopters: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
     it('should create an attribute', async () => {
-      const createAttributeDto: CreateAttributeDto = {
-        name: 'Color',
-      };
-
-      const attributeResult: Attribute = {
-        id: 1,
-        name: 'Color',
-        attributeHelicopters: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
       jest
         .spyOn(mockAttributeRepository, 'create')
         .mockReturnValue(attributeResult);
@@ -77,18 +77,6 @@ describe('AttributesService', () => {
     });
 
     it('should throw InternalServerErrorException if an error occurs', async () => {
-      const createAttributeDto: CreateAttributeDto = {
-        name: 'Color',
-      };
-
-      const attributeResult: Attribute = {
-        id: 1,
-        name: 'Color',
-        attributeHelicopters: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
       jest
         .spyOn(mockAttributeRepository, 'create')
         .mockReturnValue(attributeResult);
@@ -106,15 +94,15 @@ describe('AttributesService', () => {
   });
 
   describe('findAll', () => {
-    it('should find all attributes', async () => {
-      const attributeResult: Attribute = {
-        id: 1,
-        name: 'Color',
-        attributeHelicopters: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+    const attributeResult: Attribute = {
+      id: 1,
+      name: 'Color',
+      attributeHelicopters: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
 
+    it('should find all attributes', async () => {
       const attributes = [attributeResult];
 
       jest
@@ -143,17 +131,17 @@ describe('AttributesService', () => {
   });
 
   describe('findOne', () => {
+    const attributeId: number = 1;
+
+    const attributeResult: Attribute = {
+      id: attributeId,
+      name: 'Color',
+      attributeHelicopters: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
     it('should find attribute by ID', async () => {
-      const attributeId: number = 1;
-
-      const attributeResult: Attribute = {
-        id: attributeId,
-        name: 'Color',
-        attributeHelicopters: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
       jest
         .spyOn(mockAttributeRepository, 'findOne')
         .mockReturnValue(of(attributeResult));
@@ -168,8 +156,6 @@ describe('AttributesService', () => {
     });
 
     it('should throw NotFoundException if attribute is not found by ID', async () => {
-      const attributeId: number = 1;
-
       jest.spyOn(mockAttributeRepository, 'findOne').mockReturnValue(of(null));
 
       try {
@@ -183,8 +169,6 @@ describe('AttributesService', () => {
     });
 
     it('should throw InternalServerErrorException if an error occurs', async () => {
-      const attributeId: number = 1;
-
       jest
         .spyOn(mockAttributeRepository, 'findOne')
         .mockReturnValue(throwError(new Error('Database error')));
@@ -199,26 +183,26 @@ describe('AttributesService', () => {
   });
 
   describe('update', () => {
+    const attributeId: number = 1;
+    const updateAttributeDto: UpdateAttributeDto = {
+      name: 'edited',
+    };
+
+    const found: Attribute = {
+      id: attributeId,
+      name: 'Color',
+      attributeHelicopters: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const updated: Attribute = {
+      ...found,
+      name: updateAttributeDto.name,
+      updatedAt: new Date(),
+    };
+
     it('should update an attribute', async () => {
-      const attributeId: number = 1;
-      const updateAttributeDto: UpdateAttributeDto = {
-        name: 'edited',
-      };
-
-      const found: Attribute = {
-        id: attributeId,
-        name: 'Color',
-        attributeHelicopters: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      const updated: Attribute = {
-        ...found,
-        name: updateAttributeDto.name,
-        updatedAt: new Date(),
-      };
-
       mockAttributeRepository.findOne.mockReturnValue(of(found));
       mockAttributeRepository.merge.mockReturnValue(updated);
       mockAttributeRepository.save.mockReturnValue(of(updated));
@@ -241,11 +225,6 @@ describe('AttributesService', () => {
     });
 
     it('should throw NotFoundException if attribute is not found by ID', async () => {
-      const attributeId: number = 1;
-      const updateAttributeDto: UpdateAttributeDto = {
-        name: 'edited',
-      };
-
       jest
         .spyOn(mockAttributeRepository, 'findOne')
         .mockResolvedValue(undefined);
@@ -263,20 +242,6 @@ describe('AttributesService', () => {
     });
 
     it('should throw InternalServerErrorException if an error occurs', async () => {
-      const attributeId: number = 1;
-
-      const updateAttributeDto: UpdateAttributeDto = {
-        name: 'edit',
-      };
-
-      const found: Attribute = {
-        id: attributeId,
-        name: 'Color',
-        attributeHelicopters: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
       jest.spyOn(mockAttributeRepository, 'findOne').mockResolvedValue(found);
 
       try {
@@ -289,33 +254,29 @@ describe('AttributesService', () => {
   });
 
   describe('remove', () => {
+    const attributeId: number = 1;
+
+    const found: Attribute = {
+      id: attributeId,
+      name: 'Color',
+      attributeHelicopters: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
     it('should remove attribute', async () => {
-      const attributeId: number = 1;
-
-      const foundAttribute: Attribute = {
-        id: attributeId,
-        name: 'Color',
-        attributeHelicopters: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      mockAttributeRepository.findOne.mockResolvedValue(foundAttribute);
-      mockAttributeRepository.remove.mockResolvedValue(foundAttribute);
+      mockAttributeRepository.findOne.mockResolvedValue(found);
+      mockAttributeRepository.remove.mockResolvedValue(found);
 
       await service.remove(attributeId).toPromise();
 
       expect(mockAttributeRepository.findOne).toHaveBeenCalledWith({
         where: { id: attributeId },
       });
-      expect(mockAttributeRepository.remove).toHaveBeenCalledWith(
-        foundAttribute,
-      );
+      expect(mockAttributeRepository.remove).toHaveBeenCalledWith(found);
     });
 
     it('should throw NotFoundException if attribute is not found by ID', async () => {
-      const attributeId: number = 1;
-
       jest.spyOn(mockAttributeRepository, 'findOne').mockReturnValue(of(null));
 
       try {
@@ -332,17 +293,7 @@ describe('AttributesService', () => {
       }
     });
 
-    it('should throw InternalServerErrorException on failed removal', async () => {
-      const attributeId: number = 1;
-
-      const found: Attribute = {
-        id: attributeId,
-        name: 'Color',
-        attributeHelicopters: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
+    it('should throw InternalServerErrorException if an error occurs', async () => {
       mockAttributeRepository.findOne.mockResolvedValue(found);
       mockAttributeRepository.remove.mockRejectedValue(
         new Error('Failed to remove attribute'),

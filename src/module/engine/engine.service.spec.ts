@@ -53,25 +53,25 @@ describe('EngineService', () => {
   });
 
   describe('create', () => {
+    const createEngineDto: CreateEngineDto = {
+      name: 'Engine',
+      year: 2023,
+      model: 'Model',
+      hp: 500,
+    };
+
+    const engineResult: Engine = {
+      id: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      name: 'Engine',
+      year: 2023,
+      model: 'Model',
+      hp: 500,
+      helicopters: [],
+    };
+
     it('should create a new engine', async () => {
-      const createEngineDto: CreateEngineDto = {
-        name: 'Engine',
-        year: 2023,
-        model: 'Model',
-        hp: 500,
-      };
-
-      const engineResult: Engine = {
-        id: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        name: 'Engine',
-        year: 2023,
-        model: 'Model',
-        hp: 500,
-        helicopters: [],
-      };
-
       jest.spyOn(mockEngineRepository, 'create').mockReturnValue(engineResult);
       jest.spyOn(mockEngineRepository, 'save').mockResolvedValue(engineResult);
 
@@ -84,24 +84,6 @@ describe('EngineService', () => {
     });
 
     it('should throw InternalServerErrorException if an error occurs', async () => {
-      const createEngineDto: CreateEngineDto = {
-        name: 'Engine',
-        year: 2023,
-        model: 'Model',
-        hp: 500,
-      };
-
-      const engineResult: Engine = {
-        id: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        name: 'Engine',
-        year: 2023,
-        model: 'Model',
-        hp: 500,
-        helicopters: [],
-      };
-
       jest.spyOn(mockEngineRepository, 'create').mockReturnValue(engineResult);
       jest.spyOn(mockEngineRepository, 'save').mockResolvedValue(engineResult);
 
@@ -115,18 +97,18 @@ describe('EngineService', () => {
   });
 
   describe('findAll', () => {
-    it('should find all engines', async () => {
-      const engineResult: Engine = {
-        id: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        name: 'Engine',
-        year: 2023,
-        model: 'Model',
-        hp: 500,
-        helicopters: [],
-      };
+    const engineResult: Engine = {
+      id: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      name: 'Engine',
+      year: 2023,
+      model: 'Model',
+      hp: 500,
+      helicopters: [],
+    };
 
+    it('should find all engines', async () => {
       const engines = [engineResult];
 
       jest.spyOn(mockEngineRepository, 'find').mockResolvedValue(engines);
@@ -151,20 +133,20 @@ describe('EngineService', () => {
   });
 
   describe('findOne', () => {
+    const engineId: number = 1;
+
+    const engineResult: Engine = {
+      id: engineId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      name: 'Engine',
+      year: 2023,
+      model: 'Model',
+      hp: 500,
+      helicopters: [],
+    };
+
     it('should find engine by ID', async () => {
-      const engineId: number = 1;
-
-      const engineResult: Engine = {
-        id: engineId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        name: 'Engine',
-        year: 2023,
-        model: 'Model',
-        hp: 500,
-        helicopters: [],
-      };
-
       jest
         .spyOn(mockEngineRepository, 'findOne')
         .mockResolvedValue(engineResult);
@@ -180,8 +162,6 @@ describe('EngineService', () => {
     });
 
     it('should throw NotFoundException if engine is not found by ID', async () => {
-      const engineId: number = 1;
-
       jest.spyOn(mockEngineRepository, 'findOne').mockReturnValue(of(null));
 
       try {
@@ -193,8 +173,6 @@ describe('EngineService', () => {
     });
 
     it('should throw InternalServerErrorException if an error occurs', async () => {
-      const engineId: number = 1;
-
       jest
         .spyOn(mockEngineRepository, 'findOne')
         .mockReturnValue(throwError(new Error('Database error')));
@@ -209,36 +187,36 @@ describe('EngineService', () => {
   });
 
   describe('update', () => {
+    const engineId: number = 1;
+
+    const updateEngineDto: UpdateEngineDto = {
+      name: 'edited',
+      year: 2020,
+      model: 'edited',
+      hp: 500,
+    };
+
+    const found: Engine = {
+      id: engineId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      name: 'Engine XYZ',
+      year: 2023,
+      model: 'Model ABC',
+      hp: 300,
+      helicopters: [],
+    };
+
+    const updated: Engine = {
+      ...found,
+      name: updateEngineDto.name,
+      year: updateEngineDto.year,
+      model: updateEngineDto.model,
+      hp: updateEngineDto.hp,
+      updatedAt: new Date(),
+    };
+
     it('should update an engine', async () => {
-      const engineId: number = 1;
-
-      const updateEngineDto: UpdateEngineDto = {
-        name: 'edited',
-        year: 2020,
-        model: 'edited',
-        hp: 500,
-      };
-
-      const found: Engine = {
-        id: engineId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        name: 'Engine XYZ',
-        year: 2023,
-        model: 'Model ABC',
-        hp: 300,
-        helicopters: [],
-      };
-
-      const updated: Engine = {
-        ...found,
-        name: updateEngineDto.name,
-        year: updateEngineDto.year,
-        model: updateEngineDto.model,
-        hp: updateEngineDto.hp,
-        updatedAt: new Date(),
-      };
-
       mockEngineRepository.findOne.mockReturnValue(of(found));
       mockEngineRepository.merge.mockReturnValue(updated);
       mockEngineRepository.save.mockReturnValue(of(updated));
@@ -259,14 +237,8 @@ describe('EngineService', () => {
     });
 
     it('should throw NotFoundException if engine is not found by ID', async () => {
-      const engineId: number = 1;
-      const updateEngineDto: UpdateEngineDto = {
-        name: 'edited',
-        year: 2020,
-        model: 'edited',
-        hp: 500,
-      };
       jest.spyOn(mockEngineRepository, 'findOne').mockResolvedValue(undefined);
+
       await expect(
         service.update(engineId, updateEngineDto).toPromise(),
       ).rejects.toThrow(NotFoundException);
@@ -276,26 +248,6 @@ describe('EngineService', () => {
     });
 
     it('should throw InternalServerException if an error occurs', async () => {
-      const engineId: number = 1;
-
-      const updateEngineDto: UpdateEngineDto = {
-        name: 'edited',
-        year: 2020,
-        model: 'edited',
-        hp: 500,
-      };
-
-      const found: Engine = {
-        id: engineId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        name: 'Engine XYZ',
-        year: 2023,
-        model: 'Model ABC',
-        hp: 300,
-        helicopters: [],
-      };
-
       jest.spyOn(mockEngineRepository, 'findOne').mockResolvedValue(found);
 
       try {
@@ -308,20 +260,20 @@ describe('EngineService', () => {
   });
 
   describe('remove', () => {
+    const engineId: number = 1;
+
+    const found: Engine = {
+      id: engineId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      name: 'Engine XYZ',
+      year: 2023,
+      model: 'Model ABC',
+      hp: 300,
+      helicopters: [],
+    };
+
     it('should remove engine', async () => {
-      const engineId: number = 1;
-
-      const found: Engine = {
-        id: engineId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        name: 'Engine XYZ',
-        year: 2023,
-        model: 'Model ABC',
-        hp: 300,
-        helicopters: [],
-      };
-
       mockEngineRepository.findOne.mockReturnValue(of(found));
       helicopterRepository.remove.mockResolvedValue({});
       mockEngineRepository.remove.mockResolvedValue({});
@@ -353,20 +305,7 @@ describe('EngineService', () => {
       });
     });
 
-    it('should throw InternalServerErrorException on failed removal', async () => {
-      const engineId: number = 1;
-
-      const found: Engine = {
-        id: engineId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        name: 'Engine XYZ',
-        year: 2023,
-        model: 'Model ABC',
-        hp: 300,
-        helicopters: [],
-      };
-
+    it('should throw InternalServerErrorException if an error occurs', async () => {
       mockEngineRepository.findOne.mockResolvedValue(found);
       helicopterRepository.remove.mockResolvedValue({});
       mockEngineRepository.remove.mockRejectedValue(new Error());

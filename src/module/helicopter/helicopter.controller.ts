@@ -48,7 +48,7 @@ export class HelicopterController {
     description: 'Failed to get helicopters',
   })
   @Get()
-  findAll() {
+  findAll(): Observable<HelicopterDto[]> {
     return from(this.helicopterService.findAll());
   }
 

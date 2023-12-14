@@ -21,7 +21,9 @@
     "test:attribute": "jest src/module/attributes/attributes.service.spec.ts",
     "test:attributeController": "jest src/module/attributes/attributes.controller.spec.ts",
     "test:engine": "jest src/module/engine/engine.service.spec.ts",
-    "test:engineController": "jest src/module/engine/engine.controller.spec.ts"
+    "test:engineController": "jest src/module/engine/engine.controller.spec.ts",
+    "test:helicopter": "jest src/module/helicopter/helicopter.service.spec.ts",
+    "test:helicopterController": "jest src/module/helicopter/helicopter.controller.spec.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
