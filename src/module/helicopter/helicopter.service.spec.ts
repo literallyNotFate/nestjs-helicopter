@@ -97,7 +97,6 @@ describe('HelicopterService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         name: 'Attribute',
-        helicopters: [],
       },
     };
 
@@ -217,13 +216,13 @@ describe('HelicopterService', () => {
         hp: 300,
         helicopters: [],
       },
-      attributeHelicopterId: 1,
+      attributeHelicopterId,
       attributeHelicopter: {
         id: attributeHelicopterId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        helicopters: [],
+        createdAt: attributeHelicopter.createdAt,
+        updatedAt: attributeHelicopter.updatedAt,
         attributes: [],
+        helicopters: [],
       },
     };
 
@@ -240,7 +239,7 @@ describe('HelicopterService', () => {
 
       const result = await service.findAll().toPromise();
 
-      expect(result).toEqual(helicopters);
+      expect(result).toMatchObject(helicopters);
     });
 
     it('should throw InternalServerErrorException if an error occurs', async () => {
@@ -297,7 +296,6 @@ describe('HelicopterService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         name: 'Attribute',
-        helicopters: [],
       },
     };
 

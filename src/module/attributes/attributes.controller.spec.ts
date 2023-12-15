@@ -45,7 +45,6 @@ describe('AttributesController', () => {
     const createdAttribute: AttributesDto = {
       id: 1,
       name: 'Color',
-      helicopters: [],
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -62,7 +61,6 @@ describe('AttributesController', () => {
     const attribute: AttributesDto = {
       id: 1,
       name: 'Color',
-      helicopters: [],
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -83,7 +81,6 @@ describe('AttributesController', () => {
     const attribute: AttributesDto = {
       id: attributeId,
       name: 'Color',
-      helicopters: [],
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -107,7 +104,6 @@ describe('AttributesController', () => {
       name: updateAttributeDto.name,
       createdAt: new Date(),
       updatedAt: new Date(),
-      helicopters: [],
     };
 
     jest.spyOn(service, 'update').mockReturnValue(of(updatedAttribute));
@@ -124,7 +120,7 @@ describe('AttributesController', () => {
   });
 
   it('should remove attribute by ID', async () => {
-    const attributeId = 1;
+    const attributeId: number = 1;
     jest.spyOn(service, 'remove').mockReturnValue(of());
 
     await controller.remove(attributeId.toString()).toPromise();
