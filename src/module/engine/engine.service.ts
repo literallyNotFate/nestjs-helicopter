@@ -10,7 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Observable, from, of } from 'rxjs';
 import { EngineDto } from './dto/engine.dto';
-import { catchError, map, mergeMap, switchMap, take } from 'rxjs/operators';
+import { catchError, concatMap, map, mergeMap, take } from 'rxjs/operators';
 import { plainToInstance } from 'class-transformer';
 import { Helicopter } from '../helicopter/entities/helicopter.entity';
 
@@ -99,13 +99,13 @@ export class EngineService {
         relations: ['helicopters'],
       }),
     ).pipe(
-      switchMap((found: Engine) => {
+      concatMap((found: Engine) => {
         if (!found) {
           throw new NotFoundException(`Engine with ID:${id} was not found.`);
         }
 
         return from(this.helicopterRepository.remove(found.helicopters)).pipe(
-          switchMap(() => this.engineRepository.remove(found)),
+          concatMap(() => this.engineRepository.remove(found)),
           catchError(() => {
             throw new InternalServerErrorException(
               'Failed to delete engine or helicopters.',

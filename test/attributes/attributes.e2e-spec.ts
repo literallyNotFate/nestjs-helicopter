@@ -21,6 +21,10 @@ describe('Attributes (e2e)', () => {
   //     expect(app).toBeDefined();
   //   });
 
+  afterAll(async () => {
+    await app.close();
+  });
+
   describe('Endpoints', () => {
     let attribute;
 
@@ -195,9 +199,5 @@ describe('Attributes (e2e)', () => {
         expect(response.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       });
     });
-  });
-
-  afterAll(async () => {
-    await app.close();
   });
 });

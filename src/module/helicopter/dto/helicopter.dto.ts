@@ -13,6 +13,7 @@ import {
 } from 'class-validator';
 
 @Exclude()
+// export class HelicopterDto implements Helicopter
 export class HelicopterDto {
   @ApiProperty({
     example: 1,

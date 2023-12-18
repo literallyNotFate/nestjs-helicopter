@@ -21,6 +21,10 @@ describe('Engine (e2e)', () => {
   //   expect(app).toBeDefined();
   // });
 
+  afterAll(async () => {
+    await app.close();
+  });
+
   describe('Endpoints', () => {
     let engine;
 

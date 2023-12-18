@@ -7,7 +7,15 @@ import {
 } from '@nestjs/common';
 import { CreateAttributeHelicopterDto } from './dto/create-attribute-helicopter.dto';
 import { UpdateAttributeHelicopterDto } from './dto/update-attribute-helicopter.dto';
-import { Observable, catchError, from, map, switchMap, take } from 'rxjs';
+import {
+  Observable,
+  catchError,
+  concatMap,
+  from,
+  map,
+  switchMap,
+  take,
+} from 'rxjs';
 import { Repository, In } from 'typeorm';
 import { AttributeHelicopter } from './entities/attribute-helicopter.entity';
 import { Attribute } from '../attributes/entities/attribute.entity';
@@ -35,7 +43,7 @@ export class AttributeHelicopterService {
         where: { id: In(attributeIds) },
       }),
     ).pipe(
-      switchMap((attributes: Attribute[]) => {
+      concatMap((attributes: Attribute[]) => {
         if (attributes.length !== attributeIds.length) {
           throw new BadRequestException('Some attributeIds are invalid');
         }
@@ -123,7 +131,7 @@ export class AttributeHelicopterService {
         where: { id: In(updateAttributeHelicopterDto.attributeIds) },
       }),
     ).pipe(
-      switchMap((attributes: Attribute[]) => {
+      concatMap((attributes: Attribute[]) => {
         if (
           attributes.length !== updateAttributeHelicopterDto.attributeIds.length
         ) {
@@ -142,7 +150,7 @@ export class AttributeHelicopterService {
             relations: ['attributes', 'helicopters'],
           }),
         ).pipe(
-          switchMap((attributeHelicopter: AttributeHelicopter) => {
+          concatMap((attributeHelicopter: AttributeHelicopter) => {
             if (!attributeHelicopter) {
               throw new NotFoundException(
                 `AttributeHelicopter with ID:${id} was not found.`,
@@ -179,7 +187,7 @@ export class AttributeHelicopterService {
         relations: ['attributes', 'helicopters'],
       }),
     ).pipe(
-      switchMap((found: AttributeHelicopter) => {
+      concatMap((found: AttributeHelicopter) => {
         if (!found) {
           throw new NotFoundException(
             `AttributeHelicopter with ID:${id} was not found.`,
@@ -198,7 +206,7 @@ export class AttributeHelicopterService {
               .whereInIds(helicopterIds)
               .execute(),
           ),
-          switchMap(() => this.attributeHelicopterRepository.remove(found)),
+          concatMap(() => this.attributeHelicopterRepository.remove(found)),
           catchError(() => {
             throw new InternalServerErrorException(
               'Failed to delete helicopters and attributes associated with the attribute helicopter.',

@@ -12,10 +12,10 @@ import { Helicopter } from './entities/helicopter.entity';
 import {
   Observable,
   catchError,
+  concatMap,
   from,
   map,
   mergeMap,
-  switchMap,
   toArray,
 } from 'rxjs';
 import { HelicopterDto } from './dto/helicopter.dto';
@@ -151,7 +151,7 @@ export class HelicopterService {
         relations: ['engine', 'attributeHelicopter'],
       }),
     ).pipe(
-      switchMap((found: Helicopter) => {
+      concatMap((found: Helicopter) => {
         if (!found) {
           throw new NotFoundException(
             `Helicopter with ID:${id} was not found.`,
@@ -163,7 +163,7 @@ export class HelicopterService {
             where: { id: updateHelicopterDto.engineId },
           }),
         ).pipe(
-          switchMap((engine: Engine) => {
+          concatMap((engine: Engine) => {
             if (!engine) {
               throw new NotFoundException(
                 `Engine with ID:${updateHelicopterDto.engineId} was not found.`,
@@ -176,7 +176,7 @@ export class HelicopterService {
                 relations: ['attributes'],
               }),
             ).pipe(
-              switchMap((attributeHelicopter: AttributeHelicopter) => {
+              concatMap((attributeHelicopter: AttributeHelicopter) => {
                 if (!attributeHelicopter) {
                   throw new NotFoundException(
                     `AttributeHelicopter with ID:${updateHelicopterDto.attributeHelicopterId} was not found.`,
