@@ -8,10 +8,10 @@ import { Module } from '@nestjs/common';
         return {
           type: 'postgres',
           host: 'localhost',
-          port: 5432,
-          username: 'postgres',
-          password: 'admin',
-          database: 'helicopters',
+          port: 5433,
+          username: 'test_user',
+          password: 'test_pass',
+          database: 'test_helicopters',
           entities: [__dirname + '/../../**/*.entity{.ts,.js}'],
           synchronize: true,
           autoLoadEntities: true,
@@ -22,3 +22,16 @@ import { Module } from '@nestjs/common';
   ],
 })
 export class DatabaseModule {}
+
+// return {
+//   type: 'postgres',
+//   host: 'localhost',
+//   port: 5432,
+//   username: 'postgres',
+//   password: 'admin',
+//   database: 'helicopters',
+//   entities: [__dirname + '/../../**/*.entity{.ts,.js}'],
+//   synchronize: true,
+//   autoLoadEntities: true,
+//   logging: true,
+// };
