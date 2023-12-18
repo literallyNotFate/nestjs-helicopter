@@ -17,7 +17,11 @@ describe('Attributes (e2e)', () => {
     await app.init();
   });
 
-  describe('Attribute', () => {
+  //   it('should be defined', () => {
+  //     expect(app).toBeDefined();
+  //   });
+
+  describe('Endpoints', () => {
     let attribute;
 
     describe('POST /attibutes', () => {
@@ -52,7 +56,7 @@ describe('Attributes (e2e)', () => {
         expect(response.statusCode).toBe(HttpStatus.BAD_REQUEST);
       });
 
-      it(`should throw InternalServerErrorException if (${HttpStatus.INTERNAL_SERVER_ERROR})`, async () => {
+      it(`should throw InternalServerErrorException (${HttpStatus.INTERNAL_SERVER_ERROR})`, async () => {
         const name: string = 'Test Error';
         const service = app.get<AttributesService>(AttributesService);
         jest.spyOn(service, 'create').mockReturnValue(throwError(new Error()));
@@ -80,7 +84,7 @@ describe('Attributes (e2e)', () => {
       });
     });
 
-    describe('GET /attibutes/:id', () => {
+    describe('GET /attributes/:id', () => {
       it(`should get attribute by ID (${HttpStatus.OK})`, async () => {
         const response = await request(app.getHttpServer()).get(
           `/attributes/${attribute.id}`,
