@@ -17,10 +17,6 @@ describe('Attribute Helicopter (e2e)', () => {
     await app.init();
   });
 
-  //   it('should be defined', () => {
-  //     expect(app).toBeDefined();
-  //   });
-
   afterAll(async () => {
     await app.close();
   });
