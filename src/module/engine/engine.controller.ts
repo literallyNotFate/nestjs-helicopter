@@ -1,5 +1,10 @@
 import { Observable, from } from 'rxjs';
-import { ApiOperation, ApiTags, ApiResponse } from '@nestjs/swagger/dist';
+import {
+  ApiOperation,
+  ApiTags,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger/dist';
 import {
   Controller,
   Get,
@@ -9,13 +14,17 @@ import {
   Param,
   Delete,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { EngineService } from './engine.service';
 import { CreateEngineDto } from './dto/create-engine.dto';
 import { UpdateEngineDto } from './dto/update-engine.dto';
 import { EngineDto } from './dto/engine.dto';
+import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 
 @ApiTags('Engine')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('engine')
 export class EngineController {
   constructor(private readonly engineService: EngineService) {}

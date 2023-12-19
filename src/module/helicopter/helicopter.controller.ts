@@ -8,14 +8,23 @@ import {
   Param,
   Delete,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { HelicopterService } from './helicopter.service';
 import { CreateHelicopterDto } from './dto/create-helicopter.dto';
 import { UpdateHelicopterDto } from './dto/update-helicopter.dto';
-import { ApiOperation, ApiTags, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiTags,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { HelicopterDto } from './dto/helicopter.dto';
+import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 
 @ApiTags('Helicopter')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('helicopter')
 export class HelicopterController {
   constructor(private readonly helicopterService: HelicopterService) {}

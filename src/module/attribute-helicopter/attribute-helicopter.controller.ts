@@ -1,4 +1,9 @@
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger/dist';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger/dist';
 import {
   Controller,
   Get,
@@ -8,14 +13,18 @@ import {
   Param,
   Delete,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { AttributeHelicopterService } from './attribute-helicopter.service';
 import { CreateAttributeHelicopterDto } from './dto/create-attribute-helicopter.dto';
 import { UpdateAttributeHelicopterDto } from './dto/update-attribute-helicopter.dto';
 import { Observable, from } from 'rxjs';
 import { AttributeHelicopterResponseDto } from './dto/attribute-helicopter-response.dto';
+import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 
 @ApiTags('Attribute Helicopter')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('attribute-helicopter')
 export class AttributeHelicopterController {
   constructor(

@@ -51,7 +51,16 @@ export class UserService {
   }
 
   findAll(): Observable<UserDto[]> {
-    return from(this.userRepository.find()).pipe(
+    return from(
+      this.userRepository.find({
+        relations: [
+          'helicopters',
+          'engines',
+          'attributeHelicopters',
+          'attributes',
+        ],
+      }),
+    ).pipe(
       map((users) => plainToInstance(UserDto, users)),
       catchError(() => {
         throw new InternalServerErrorException('Failed to get all users.');

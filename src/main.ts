@@ -9,6 +9,7 @@ async function bootstrap() {
     .setTitle('Helicopters')
     .setDescription('Helicopters API showcase')
     .setVersion('1.0')
+    .addBearerAuth({ type: 'http', name: 'AccessToken' })
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

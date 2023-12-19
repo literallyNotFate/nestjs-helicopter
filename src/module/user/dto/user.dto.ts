@@ -122,11 +122,11 @@ export class UserDto {
   helicopters: HelicopterDto[];
 
   @ApiProperty({ type: [AttributeHelicopterResponseDto] })
-  attributeHelicopters: HelicopterDto[];
+  attributeHelicopters: AttributeHelicopterResponseDto[];
 
   @ApiProperty({ type: [AttributesDto] })
-  attributes: HelicopterDto[];
+  attributes: AttributesDto[];
 
   @ApiProperty({ type: [EngineDto] })
-  engines: HelicopterDto[];
+  engines: EngineDto[];
 }
