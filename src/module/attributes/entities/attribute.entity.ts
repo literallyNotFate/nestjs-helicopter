@@ -1,3 +1,4 @@
+import { User } from '../../user/entities/user.entity';
 import { AttributeHelicopter } from '../../attribute-helicopter/entities/attribute-helicopter.entity';
 import {
   Column,
@@ -6,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   ManyToMany,
+  ManyToOne,
 } from 'typeorm';
 
 @Entity({ name: 'attributes' })
@@ -27,4 +29,7 @@ export class Attribute {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  @ManyToOne(() => User, (user) => user.attributes)
+  creator: User;
 }

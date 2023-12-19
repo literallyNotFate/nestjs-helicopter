@@ -11,6 +11,7 @@ import {
   IsObject,
   IsOptional,
 } from 'class-validator';
+import { UserDto } from 'src/module/user/dto/user.dto';
 
 @Exclude()
 // export class HelicopterDto implements Helicopter
@@ -98,4 +99,11 @@ export class HelicopterDto {
   @IsOptional()
   @Expose()
   attributeHelicopter?: AttributeHelicopterResponseDto;
+
+  @ApiPropertyOptional({ type: () => UserDto })
+  @Type(() => UserDto)
+  @IsObject()
+  @IsOptional()
+  @Expose()
+  creator?: UserDto;
 }

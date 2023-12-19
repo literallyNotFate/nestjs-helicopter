@@ -5,9 +5,11 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   OneToMany,
+  ManyToOne,
 } from 'typeorm';
 
 import { Helicopter } from '../../helicopter/entities/helicopter.entity';
+import { User } from '../../user/entities/user.entity';
 
 @Entity({ name: 'engine' })
 export class Engine {
@@ -34,4 +36,7 @@ export class Engine {
 
   @OneToMany(() => Helicopter, (helicopter) => helicopter.engine)
   helicopters!: Helicopter[];
+
+  @ManyToOne(() => User, (user) => user.engines)
+  creator: User;
 }

@@ -29,13 +29,11 @@ export class AttributesDto {
   @ApiProperty({ example: '2023-05-12T13:55:37.839Z', type: Date })
   @IsDate()
   @IsNotEmpty()
-  @IsNotEmpty()
   @Expose()
   createdAt: Date;
 
   @ApiProperty({ example: '2023-05-12T13:55:37.839Z', type: Date })
   @IsDate()
-  @IsNotEmpty()
   @IsNotEmpty()
   @Expose()
   updatedAt: Date;

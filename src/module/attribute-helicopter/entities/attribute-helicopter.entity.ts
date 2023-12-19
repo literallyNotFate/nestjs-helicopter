@@ -7,10 +7,12 @@ import {
   ManyToMany,
   JoinTable,
   OneToMany,
+  ManyToOne,
 } from 'typeorm';
 
 import { Attribute } from '../../attributes/entities/attribute.entity';
 import { Helicopter } from '../../helicopter/entities/helicopter.entity';
+import { User } from '../../user/entities/user.entity';
 
 @Entity({ name: 'attribute-helicopter' })
 export class AttributeHelicopter {
@@ -36,4 +38,7 @@ export class AttributeHelicopter {
 
   @OneToMany(() => Helicopter, (helicopter) => helicopter.attributeHelicopter)
   helicopters: Helicopter[];
+
+  @ManyToOne(() => User, (user) => user.attributeHelicopters)
+  creator: User;
 }

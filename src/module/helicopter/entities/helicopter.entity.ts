@@ -11,6 +11,7 @@ import {
 
 import { Engine } from '../../engine/entities/engine.entity';
 import { AttributeHelicopter } from '../../attribute-helicopter/entities/attribute-helicopter.entity';
+import { User } from '../../user/entities/user.entity';
 
 @Entity({ name: 'helicopter' })
 export class Helicopter {
@@ -44,4 +45,7 @@ export class Helicopter {
   @ManyToOne(() => AttributeHelicopter, (ah) => ah.helicopters, { eager: true })
   @JoinColumn({ name: 'attribute_helicopter_id' })
   attributeHelicopter?: AttributeHelicopter;
+
+  @ManyToOne(() => User, (user) => user.helicopters)
+  creator: User;
 }
