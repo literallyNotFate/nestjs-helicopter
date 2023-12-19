@@ -75,7 +75,9 @@ export class HelicopterService {
   }
 
   findAll(): Observable<HelicopterDto[]> {
-    return from(this.helicopterRepository.find()).pipe(
+    return from(
+      this.helicopterRepository.find({ relations: ['creator'] }),
+    ).pipe(
       mergeMap((helicopters: Helicopter[]) =>
         from(helicopters).pipe(
           mergeMap((helicopter: Helicopter) =>
@@ -113,7 +115,12 @@ export class HelicopterService {
   }
 
   findOne(id: number): Observable<HelicopterDto> {
-    return from(this.helicopterRepository.findOne({ where: { id } })).pipe(
+    return from(
+      this.helicopterRepository.findOne({
+        where: { id },
+        relations: ['creator'],
+      }),
+    ).pipe(
       mergeMap((helicopter: Helicopter) => {
         return from(
           this.attributeHelicopterRepository.findOne({

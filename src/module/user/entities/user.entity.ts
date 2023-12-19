@@ -17,7 +17,7 @@ import { Engine } from '../../engine/entities/engine.entity';
 @Entity({ name: 'user' })
 export class User {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @CreateDateColumn({
     name: 'created_at',
@@ -45,7 +45,7 @@ export class User {
   @Exclude()
   password!: string;
 
-  @Column({ nullable: false, name: 'phone_number' })
+  @Column({ nullable: false })
   phoneNumber!: string;
 
   @OneToMany(() => Helicopter, (helicopter) => helicopter.creator)

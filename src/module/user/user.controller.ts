@@ -13,6 +13,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UserDto } from './dto/user.dto';
+import { Observable, from } from 'rxjs';
 
 @ApiTags('User')
 @Controller('user')
@@ -30,8 +31,8 @@ export class UserController {
     description: 'Failed to create user',
   })
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  create(@Body() createUserDto: CreateUserDto): Observable<UserDto> {
+    return from(this.userService.create(createUserDto));
   }
 
   @ApiOperation({ summary: 'Endpoint to get all users' })
@@ -45,8 +46,8 @@ export class UserController {
     description: 'Failed to get users',
   })
   @Get()
-  findAll() {
-    return this.userService.findAll();
+  findAll(): Observable<UserDto[]> {
+    return from(this.userService.findAll());
   }
 
   @ApiOperation({ summary: 'Endpoint to get user by ID' })
@@ -60,7 +61,7 @@ export class UserController {
     description: 'Failed to get user by ID',
   })
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string): Observable<UserDto> {
     return this.userService.findOne(+id);
   }
 

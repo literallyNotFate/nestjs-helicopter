@@ -103,13 +103,14 @@ export class UserDto {
   @Length(4, 20, {
     message: 'password length must be in range between 4 and 20',
   })
-  password!: number;
+  @Expose()
+  password!: string;
 
   @ApiProperty({
     nullable: false,
     required: true,
     type: String,
-    example: '+37312345678',
+    example: '+37368345678',
   })
   @IsString()
   @IsNotEmpty()
