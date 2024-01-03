@@ -11,7 +11,7 @@ import {
   IsObject,
   IsOptional,
 } from 'class-validator';
-import { UserDto } from 'src/module/user/dto/user.dto';
+import { UserDto } from '../../user/dto/user.dto';
 
 @Exclude()
 // export class HelicopterDto implements Helicopter

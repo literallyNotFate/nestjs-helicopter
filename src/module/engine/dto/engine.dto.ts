@@ -9,7 +9,9 @@ import {
   IsString,
   IsOptional,
   IsArray,
+  IsObject,
 } from 'class-validator';
+import { UserDto } from '../../user/dto/user.dto';
 
 @Exclude()
 export class EngineDto {
@@ -80,4 +82,11 @@ export class EngineDto {
   @IsOptional()
   @Expose()
   helicopters?: HelicopterDto[];
+
+  @ApiPropertyOptional({ type: () => UserDto })
+  @Type(() => UserDto)
+  @IsObject()
+  @IsOptional()
+  @Expose()
+  creator?: UserDto;
 }

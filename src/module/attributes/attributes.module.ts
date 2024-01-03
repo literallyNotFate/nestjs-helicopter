@@ -9,5 +9,6 @@ import { AttributeHelicopter } from '../attribute-helicopter/entities/attribute-
   imports: [TypeOrmModule.forFeature([Attribute, AttributeHelicopter])],
   controllers: [AttributesController],
   providers: [AttributesService],
+  exports: [AttributesService],
 })
 export class AttributesModule {}

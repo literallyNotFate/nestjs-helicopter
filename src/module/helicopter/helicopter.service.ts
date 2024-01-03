@@ -1,3 +1,4 @@
+import { AuthService } from '../../core/auth/auth.service';
 import { plainToInstance } from 'class-transformer';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -5,6 +6,7 @@ import {
   Injectable,
   NotFoundException,
   InternalServerErrorException,
+  Req,
 } from '@nestjs/common';
 import { CreateHelicopterDto } from './dto/create-helicopter.dto';
 import { UpdateHelicopterDto } from './dto/update-helicopter.dto';
@@ -22,6 +24,7 @@ import { HelicopterDto } from './dto/helicopter.dto';
 import { Engine } from '../engine/entities/engine.entity';
 import { AttributeHelicopter } from '../attribute-helicopter/entities/attribute-helicopter.entity';
 import { AttributeHelicopterResponseDto } from '../attribute-helicopter/dto/attribute-helicopter-response.dto';
+import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class HelicopterService {
@@ -32,9 +35,13 @@ export class HelicopterService {
     private readonly engineRepository: Repository<Engine>,
     @InjectRepository(AttributeHelicopter)
     private readonly attributeHelicopterRepository: Repository<AttributeHelicopter>,
+    private readonly authService: AuthService,
   ) {}
 
-  create(createHelicopterDto: CreateHelicopterDto): Observable<HelicopterDto> {
+  create(
+    @Req() request,
+    createHelicopterDto: CreateHelicopterDto,
+  ): Observable<HelicopterDto> {
     const { attributeHelicopterId, ...rest } = createHelicopterDto;
 
     return from(
@@ -50,21 +57,30 @@ export class HelicopterService {
           );
         }
 
-        const newHelicopter = this.helicopterRepository.create({
-          ...rest,
-          attributeHelicopter: foundAttribute,
-        });
+        return this.authService.getAuthenticatedUser(request).pipe(
+          concatMap((auth: User) => {
+            const newHelicopter = this.helicopterRepository.create({
+              ...rest,
+              attributeHelicopter: foundAttribute,
+              creator: auth,
+            });
 
-        return from(this.helicopterRepository.save(newHelicopter)).pipe(
-          map((helicopter: Helicopter) => {
-            const helicopterDto = plainToInstance(HelicopterDto, helicopter);
+            return from(this.helicopterRepository.save(newHelicopter)).pipe(
+              map((helicopter: Helicopter) => {
+                const helicopterDto = plainToInstance(
+                  HelicopterDto,
+                  helicopter,
+                );
 
-            if (helicopter.attributeHelicopter) {
-              const attributeHelicopterResponse =
-                AttributeHelicopterResponseDto.ToResponse(foundAttribute);
-              helicopterDto.attributeHelicopter = attributeHelicopterResponse;
-            }
-            return helicopterDto;
+                if (helicopter.attributeHelicopter) {
+                  const attributeHelicopterResponse =
+                    AttributeHelicopterResponseDto.ToResponse(foundAttribute);
+                  helicopterDto.attributeHelicopter =
+                    attributeHelicopterResponse;
+                }
+                return helicopterDto;
+              }),
+            );
           }),
         );
       }),
@@ -84,7 +100,7 @@ export class HelicopterService {
             from(
               this.attributeHelicopterRepository.findOne({
                 where: { id: helicopter.attributeHelicopterId },
-                relations: ['attributes'],
+                relations: ['attributes', 'creator'],
               }),
             ).pipe(
               map((attributeHelicopter: AttributeHelicopter) => {
@@ -101,6 +117,7 @@ export class HelicopterService {
                   helicopterDto.attributeHelicopter =
                     attributeHelicopterResponse;
                 }
+
                 return helicopterDto;
               }),
             ),

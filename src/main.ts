@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { ForbiddenExceptionFilter } from './common/filters/forbidden-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -11,6 +12,8 @@ async function bootstrap() {
     .setVersion('1.0')
     .addBearerAuth({ type: 'http', name: 'AccessToken' })
     .build();
+
+  app.useGlobalFilters(new ForbiddenExceptionFilter());
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

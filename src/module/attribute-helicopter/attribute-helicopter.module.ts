@@ -12,5 +12,6 @@ import { Helicopter } from '../helicopter/entities/helicopter.entity';
   ],
   controllers: [AttributeHelicopterController],
   providers: [AttributeHelicopterService],
+  exports: [AttributeHelicopterService],
 })
 export class AttributeHelicopterModule {}

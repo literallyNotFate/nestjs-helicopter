@@ -1,12 +1,15 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Exclude, Expose } from 'class-transformer';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Exclude, Expose, Type } from 'class-transformer';
 import {
   IsDate,
   IsInt,
   IsNotEmpty,
+  IsObject,
+  IsOptional,
   IsPositive,
   IsString,
 } from 'class-validator';
+import { UserDto } from '../../user/dto/user.dto';
 //import { AttributeHelicopterDto } from '../../attribute-helicopter/dto/attribute-helicopter.dto';
 
 @Exclude()
@@ -37,4 +40,11 @@ export class AttributesDto {
   @IsNotEmpty()
   @Expose()
   updatedAt: Date;
+
+  @ApiPropertyOptional({ type: () => UserDto })
+  @Type(() => UserDto)
+  @IsObject()
+  @IsOptional()
+  @Expose()
+  creator?: UserDto;
 }

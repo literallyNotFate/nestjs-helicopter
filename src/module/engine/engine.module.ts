@@ -9,5 +9,6 @@ import { Helicopter } from '../helicopter/entities/helicopter.entity';
   imports: [TypeOrmModule.forFeature([Engine, Helicopter])],
   controllers: [EngineController],
   providers: [EngineService],
+  exports: [EngineService],
 })
 export class EngineModule {}

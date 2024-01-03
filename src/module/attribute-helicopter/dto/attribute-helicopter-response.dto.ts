@@ -1,8 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AttributesDto } from '../../attributes/dto/attributes.dto';
 import { HelicopterDto } from '../../helicopter/dto/helicopter.dto';
 import { AttributeHelicopter } from '../entities/attribute-helicopter.entity';
-import { plainToInstance } from 'class-transformer';
+import { Type, plainToInstance } from 'class-transformer';
+import { UserDto } from '../../user/dto/user.dto';
 
 export class AttributeHelicopterResponseDto {
   @ApiProperty({ example: 1, type: Number })
@@ -24,6 +25,10 @@ export class AttributeHelicopterResponseDto {
   @ApiProperty({ type: [HelicopterDto] })
   helicopters: HelicopterDto[];
 
+  @ApiPropertyOptional({ type: () => UserDto })
+  @Type(() => UserDto)
+  creator?: UserDto;
+
   public static ToResponse(
     data: AttributeHelicopter,
   ): AttributeHelicopterResponseDto {
@@ -31,6 +36,7 @@ export class AttributeHelicopterResponseDto {
     responseDto.id = data.id;
     responseDto.createdAt = data.createdAt;
     responseDto.updatedAt = data.updatedAt;
+    responseDto.creator = plainToInstance(UserDto, data.creator);
 
     if (data.attributes && Array.isArray(data.attributes)) {
       responseDto.attributes = data.attributes.map((attr, index) => ({

@@ -3,6 +3,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
@@ -19,6 +20,7 @@ import {
   throwError,
 } from 'rxjs';
 import { JWT_EXPIRATION, JWT_SECRET } from './constants';
+import { User } from 'src/module/user/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -96,5 +98,25 @@ export class AuthService {
     if (!isPasswordMatching) {
       throw new BadRequestException('Wrong credentials provided.');
     }
+  }
+
+  getAuthenticatedUser(request: Request): Observable<User> {
+    const authHeader = request.headers['authorization'];
+
+    if (!authHeader) {
+      throw new Error('Authorization header is missing');
+    }
+
+    const token = authHeader.split(' ')[1];
+    const payload = this.jwtService.verify(token);
+
+    const { email } = payload;
+    const user = this.userRepository.getByEmail(email);
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    return user;
   }
 }

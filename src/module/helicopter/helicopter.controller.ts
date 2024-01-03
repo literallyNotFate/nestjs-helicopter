@@ -9,6 +9,7 @@ import {
   Delete,
   HttpStatus,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { HelicopterService } from './helicopter.service';
 import { CreateHelicopterDto } from './dto/create-helicopter.dto';
@@ -21,6 +22,7 @@ import {
 } from '@nestjs/swagger';
 import { HelicopterDto } from './dto/helicopter.dto';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
+import { CreatorGuard } from '../../common/guards/creator.guard';
 
 @ApiTags('Helicopter')
 @ApiBearerAuth()
@@ -41,9 +43,10 @@ export class HelicopterController {
   })
   @Post()
   create(
+    @Req() request,
     @Body() createHelicopterDto: CreateHelicopterDto,
   ): Observable<HelicopterDto> {
-    return from(this.helicopterService.create(createHelicopterDto));
+    return from(this.helicopterService.create(request, createHelicopterDto));
   }
 
   @ApiOperation({ summary: 'Endpoint to get all helicopters' })
@@ -87,6 +90,7 @@ export class HelicopterController {
     description: 'Failed to edit helicopter',
   })
   @Patch(':id')
+  @UseGuards(CreatorGuard)
   update(
     @Param('id') id: string,
     @Body() updateHelicopterDto: UpdateHelicopterDto,
@@ -104,6 +108,7 @@ export class HelicopterController {
     description: 'Failed to delete helicopter',
   })
   @Delete(':id')
+  @UseGuards(CreatorGuard)
   remove(@Param('id') id: string): Observable<void> {
     return this.helicopterService.remove(+id);
   }
