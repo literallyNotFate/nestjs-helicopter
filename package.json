@@ -25,7 +25,9 @@
     "test:helicopter": "jest src/module/helicopter/helicopter.service.spec.ts",
     "test:helicopterController": "jest src/module/helicopter/helicopter.controller.spec.ts",
     "test:ah": "jest src/module/attribute-helicopter/attribute-helicopter.service.spec.ts",
-    "test:ahController": "jest src/module/attribute-helicopter/attribute-helicopter.controller.spec.ts"
+    "test:ahController": "jest src/module/attribute-helicopter/attribute-helicopter.controller.spec.ts",
+    "test:user": "jest src/module/user/user.service.spec.ts",
+    "test:userController": "jest src/module/user/user.controller.spec.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

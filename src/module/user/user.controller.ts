@@ -90,7 +90,7 @@ export class UserController {
     description: 'Failed to delete user',
   })
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string): Observable<void> {
     return this.userService.remove(+id);
   }
 }
