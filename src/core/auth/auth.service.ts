@@ -12,15 +12,15 @@ import * as bcrypt from 'bcrypt';
 import {
   Observable,
   catchError,
+  concatMap,
   from,
   map,
-  of,
   switchMap,
-  take,
   throwError,
 } from 'rxjs';
 import { JWT_EXPIRATION, JWT_SECRET } from './constants';
 import { User } from 'src/module/user/entities/user.entity';
+import { TokensDto } from './dto/tokens.dto';
 
 @Injectable()
 export class AuthService {
@@ -32,22 +32,21 @@ export class AuthService {
 
   register(registerData: RegisterDto): Observable<{ accessToken: string }> {
     return from(this.userRepository.getByEmail(registerData.email)).pipe(
-      switchMap((existingUser) => {
-        if (existingUser) {
+      switchMap((existing: User) => {
+        if (existing) {
           throw new BadRequestException('User with that email already exists');
         }
 
         return from(bcrypt.hash(registerData.password, 10)).pipe(
-          switchMap((hashedPassword) => {
+          switchMap((hashedPassword: string) => {
             const newUser = {
               ...registerData,
               password: hashedPassword,
             };
 
             return from(this.userRepository.create(newUser)).pipe(
-              switchMap((createdUser) => {
-                delete createdUser.password;
-                return this.getJWT(createdUser.id, createdUser.email);
+              switchMap((created: User) => {
+                return this.getJWT(created.id, created.email);
               }),
               catchError(() => {
                 return throwError(
@@ -73,31 +72,39 @@ export class AuthService {
         expiresIn: JWT_EXPIRATION,
       }),
     ).pipe(
-      map((accessToken) => {
+      map((accessToken: string) => {
         return { accessToken };
       }),
     );
   }
 
-  getAuth(email: string, password: string) {
+  getAuth(email: string, password: string): Observable<TokensDto> {
     return from(this.usersRepository.getByEmail(email)).pipe(
-      take(1),
-      map((user) => {
-        of(AuthService.verifyPassword(password, user.password));
+      map((user: User) => {
+        if (!user) {
+          throw new BadRequestException('Wrong credentials provided.');
+        }
         return user;
       }),
-      catchError(() => {
-        throw new BadRequestException('Wrong credentials provided.');
+      concatMap((user: User) => {
+        return from(AuthService.verifyPassword(password, user.password)).pipe(
+          map((isPasswordValid: boolean) => {
+            if (!isPasswordValid) {
+              throw new BadRequestException('Wrong credentials provided.');
+            }
+            return user;
+          }),
+        );
+      }),
+      concatMap((user: User) => {
+        return this.getJWT(user.id, user.email);
       }),
     );
   }
 
   static async verifyPassword(password: string, hashed: string) {
     const isPasswordMatching = await bcrypt.compare(password, hashed);
-
-    if (!isPasswordMatching) {
-      throw new BadRequestException('Wrong credentials provided.');
-    }
+    return isPasswordMatching;
   }
 
   getAuthenticatedUser(request: Request): Observable<User> {

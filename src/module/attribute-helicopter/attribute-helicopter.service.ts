@@ -4,6 +4,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
   BadRequestException,
+  Req,
 } from '@nestjs/common';
 import { CreateAttributeHelicopterDto } from './dto/create-attribute-helicopter.dto';
 import { UpdateAttributeHelicopterDto } from './dto/update-attribute-helicopter.dto';
@@ -21,6 +22,8 @@ import { AttributeHelicopter } from './entities/attribute-helicopter.entity';
 import { Attribute } from '../attributes/entities/attribute.entity';
 import { Helicopter } from '../helicopter/entities/helicopter.entity';
 import { AttributeHelicopterResponseDto } from './dto/attribute-helicopter-response.dto';
+import { AuthService } from '../../core/auth/auth.service';
+import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class AttributeHelicopterService {
@@ -31,9 +34,11 @@ export class AttributeHelicopterService {
     private readonly attributeRepository: Repository<Attribute>,
     @InjectRepository(Helicopter)
     private readonly helicopterRepository: Repository<Helicopter>,
+    private readonly authService: AuthService,
   ) {}
 
   create(
+    @Req() request,
     createAttributeHelicopterDto: CreateAttributeHelicopterDto,
   ): Observable<AttributeHelicopterResponseDto> {
     const { attributeIds, values } = createAttributeHelicopterDto;
@@ -54,23 +59,28 @@ export class AttributeHelicopterService {
           );
         }
 
-        const newAttributeHelicopter =
-          this.attributeHelicopterRepository.create({
-            values,
-            attributes,
-          });
+        return this.authService.getAuthenticatedUser(request).pipe(
+          concatMap((auth: User) => {
+            const newAttributeHelicopter =
+              this.attributeHelicopterRepository.create({
+                values,
+                attributes,
+                creator: auth,
+              });
 
-        return from(
-          this.attributeHelicopterRepository.save(newAttributeHelicopter),
-        ).pipe(
-          map((createdAttributeHelicopter: AttributeHelicopter) =>
-            AttributeHelicopterResponseDto.ToResponse(
-              createdAttributeHelicopter,
-            ),
-          ),
+            return from(
+              this.attributeHelicopterRepository.save(newAttributeHelicopter),
+            ).pipe(
+              map((createdAttributeHelicopter: AttributeHelicopter) =>
+                AttributeHelicopterResponseDto.ToResponse(
+                  createdAttributeHelicopter,
+                ),
+              ),
+            );
+          }),
           catchError(() => {
             throw new InternalServerErrorException(
-              'Failed to create attribute helicopter',
+              'Failed to create attribute helicopter.',
             );
           }),
         );
@@ -81,7 +91,7 @@ export class AttributeHelicopterService {
   findAll(): Observable<AttributeHelicopterResponseDto[]> {
     return from(
       this.attributeHelicopterRepository.find({
-        relations: ['attributes', 'helicopters'],
+        relations: ['attributes', 'helicopters', 'creator'],
       }),
     ).pipe(
       map((ats: AttributeHelicopter[]) => {
@@ -101,7 +111,7 @@ export class AttributeHelicopterService {
     return from(
       this.attributeHelicopterRepository.findOne({
         where: { id },
-        relations: ['attributes', 'helicopters'],
+        relations: ['attributes', 'helicopters', 'creator'],
       }),
     ).pipe(
       take(1),
@@ -147,7 +157,7 @@ export class AttributeHelicopterService {
         return from(
           this.attributeHelicopterRepository.findOne({
             where: { id },
-            relations: ['attributes', 'helicopters'],
+            relations: ['attributes', 'helicopters', 'creator'],
           }),
         ).pipe(
           concatMap((attributeHelicopter: AttributeHelicopter) => {

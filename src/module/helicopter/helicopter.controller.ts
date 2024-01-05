@@ -22,7 +22,7 @@ import {
 } from '@nestjs/swagger';
 import { HelicopterDto } from './dto/helicopter.dto';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
-import { CreatorGuard } from '../../common/guards/creator.guard';
+import { HelicopterCreatorGuard } from '../../common/guards/helicopter-creator.guard';
 
 @ApiTags('Helicopter')
 @ApiBearerAuth()
@@ -90,7 +90,7 @@ export class HelicopterController {
     description: 'Failed to edit helicopter',
   })
   @Patch(':id')
-  @UseGuards(CreatorGuard)
+  @UseGuards(HelicopterCreatorGuard)
   update(
     @Param('id') id: string,
     @Body() updateHelicopterDto: UpdateHelicopterDto,
@@ -108,7 +108,7 @@ export class HelicopterController {
     description: 'Failed to delete helicopter',
   })
   @Delete(':id')
-  @UseGuards(CreatorGuard)
+  @UseGuards(HelicopterCreatorGuard)
   remove(@Param('id') id: string): Observable<void> {
     return this.helicopterService.remove(+id);
   }

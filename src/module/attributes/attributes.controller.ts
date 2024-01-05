@@ -1,4 +1,9 @@
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger/dist';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger/dist';
 import {
   Controller,
   Get,
@@ -8,14 +13,20 @@ import {
   Param,
   Delete,
   HttpStatus,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { AttributesService } from './attributes.service';
 import { CreateAttributeDto } from './dto/create-attribute.dto';
 import { UpdateAttributeDto } from './dto/update-attribute.dto';
 import { AttributesDto } from './dto/attributes.dto';
 import { Observable, from } from 'rxjs';
+import { AttributeCreatorGuard } from '../../common/guards/attribute-creator.guard';
+import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 
 @ApiTags('Attributes')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('attributes')
 export class AttributesController {
   constructor(private readonly attributesService: AttributesService) {}
@@ -32,9 +43,10 @@ export class AttributesController {
     description: 'Failed to create attribute',
   })
   create(
+    @Req() request,
     @Body() createAttributeDto: CreateAttributeDto,
   ): Observable<AttributesDto> {
-    return from(this.attributesService.create(createAttributeDto));
+    return from(this.attributesService.create(request, createAttributeDto));
   }
 
   @ApiOperation({ summary: 'Endpoint to get all attributes' })
@@ -78,6 +90,7 @@ export class AttributesController {
     description: 'Failed to edit attribute',
   })
   @Patch(':id')
+  @UseGuards(AttributeCreatorGuard)
   update(
     @Param('id') id: string,
     @Body() updateAttributeDto: UpdateAttributeDto,
@@ -94,6 +107,7 @@ export class AttributesController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Failed to delete attribute',
   })
+  @UseGuards(AttributeCreatorGuard)
   @Delete(':id')
   remove(@Param('id') id: string): Observable<void> {
     return this.attributesService.remove(+id);

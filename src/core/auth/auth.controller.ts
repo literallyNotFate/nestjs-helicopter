@@ -1,6 +1,6 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Observable, from, mergeMap } from 'rxjs';
+import { Observable, from } from 'rxjs';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -43,12 +43,6 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('login')
   login(@Body() loginData: LoginDto): Observable<TokensDto> {
-    return from(
-      this.authService.getAuth(loginData.email, loginData.password),
-    ).pipe(
-      mergeMap((user) => {
-        return this.authService.getJWT(user.id, user.email);
-      }),
-    );
+    return from(this.authService.getAuth(loginData.email, loginData.password));
   }
 }

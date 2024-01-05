@@ -1,5 +1,11 @@
 import { AttributeHelicopterResponseDto } from './../../module/attribute-helicopter/dto/attribute-helicopter-response.dto';
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { User } from '../../module/user/entities/user.entity';
 import { HelicopterService } from '../../module/helicopter/helicopter.service';
@@ -14,9 +20,13 @@ import { AttributesDto } from '../../module/attributes/dto/attributes.dto';
 @Injectable()
 export class CreatorGuard implements CanActivate {
   constructor(
+    @Inject(forwardRef(() => HelicopterService))
     private readonly helicopterService: HelicopterService,
+    @Inject(forwardRef(() => EngineService))
     private readonly engineService: EngineService,
+    @Inject(forwardRef(() => AttributesService))
     private readonly attributeService: AttributesService,
+    @Inject(forwardRef(() => AttributeHelicopterService))
     private readonly attributeHelicopterService: AttributeHelicopterService,
   ) {}
 

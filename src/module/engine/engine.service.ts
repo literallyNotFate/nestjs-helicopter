@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   InternalServerErrorException,
+  Req,
 } from '@nestjs/common';
 import { CreateEngineDto } from './dto/create-engine.dto';
 import { UpdateEngineDto } from './dto/update-engine.dto';
@@ -13,6 +14,8 @@ import { EngineDto } from './dto/engine.dto';
 import { catchError, concatMap, map, mergeMap, take } from 'rxjs/operators';
 import { plainToInstance } from 'class-transformer';
 import { Helicopter } from '../helicopter/entities/helicopter.entity';
+import { AuthService } from '../../core/auth/auth.service';
+import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class EngineService {
@@ -21,13 +24,24 @@ export class EngineService {
     private readonly engineRepository: Repository<Engine>,
     @InjectRepository(Helicopter)
     private readonly helicopterRepository: Repository<Helicopter>,
+    private readonly authService: AuthService,
   ) {}
 
-  create(createEngineDto: CreateEngineDto): Observable<EngineDto> {
-    const newEngine = this.engineRepository.create(createEngineDto);
+  create(
+    @Req() request,
+    createEngineDto: CreateEngineDto,
+  ): Observable<EngineDto> {
+    return this.authService.getAuthenticatedUser(request).pipe(
+      concatMap((auth: User) => {
+        const newEngine = this.engineRepository.create({
+          ...createEngineDto,
+          creator: auth,
+        });
 
-    return from(this.engineRepository.save(newEngine)).pipe(
-      map((engine: Engine) => plainToInstance(EngineDto, engine)),
+        return from(this.engineRepository.save(newEngine)).pipe(
+          map((engine: Engine) => plainToInstance(EngineDto, engine)),
+        );
+      }),
       catchError(() => {
         throw new InternalServerErrorException('Failed to create engine.');
       }),
@@ -37,7 +51,11 @@ export class EngineService {
   findAll(): Observable<EngineDto[]> {
     return from(
       this.engineRepository.find({
-        relations: ['helicopters', 'helicopters.attributeHelicopter'],
+        relations: [
+          'helicopters',
+          'helicopters.attributeHelicopter',
+          'creator',
+        ],
       }),
     ).pipe(
       map((engines: Engine[]) => plainToInstance(EngineDto, engines)),
@@ -51,7 +69,11 @@ export class EngineService {
     return from(
       this.engineRepository.findOne({
         where: { id },
-        relations: ['helicopters', 'helicopters.attributeHelicopter'],
+        relations: [
+          'helicopters',
+          'helicopters.attributeHelicopter',
+          'creator',
+        ],
       }),
     ).pipe(
       take(1),
@@ -72,6 +94,7 @@ export class EngineService {
     return from(
       this.engineRepository.findOne({
         where: { id },
+        relations: ['creator'],
       }),
     ).pipe(
       take(1),

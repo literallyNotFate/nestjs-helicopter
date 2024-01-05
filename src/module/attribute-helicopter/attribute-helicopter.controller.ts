@@ -14,6 +14,7 @@ import {
   Delete,
   HttpStatus,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { AttributeHelicopterService } from './attribute-helicopter.service';
 import { CreateAttributeHelicopterDto } from './dto/create-attribute-helicopter.dto';
@@ -21,6 +22,7 @@ import { UpdateAttributeHelicopterDto } from './dto/update-attribute-helicopter.
 import { Observable, from } from 'rxjs';
 import { AttributeHelicopterResponseDto } from './dto/attribute-helicopter-response.dto';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
+import { AttributeHelicopterCreatorGuard } from '../../common/guards/attribute-helicopter-creator.guard';
 
 @ApiTags('Attribute Helicopter')
 @ApiBearerAuth()
@@ -43,10 +45,14 @@ export class AttributeHelicopterController {
   })
   @Post()
   create(
+    @Req() request,
     @Body() createAttributeHelicopterDto: CreateAttributeHelicopterDto,
   ): Observable<AttributeHelicopterResponseDto> {
     return from(
-      this.attributeHelicopterService.create(createAttributeHelicopterDto),
+      this.attributeHelicopterService.create(
+        request,
+        createAttributeHelicopterDto,
+      ),
     );
   }
 
@@ -91,6 +97,7 @@ export class AttributeHelicopterController {
     description: 'Failed to edit helicopter attribute',
   })
   @Patch(':id')
+  @UseGuards(AttributeHelicopterCreatorGuard)
   update(
     @Param('id') id: string,
     @Body() updateAttributeHelicopterDto: UpdateAttributeHelicopterDto,
@@ -109,6 +116,7 @@ export class AttributeHelicopterController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Failed to delete helicopter attribute',
   })
+  @UseGuards(AttributeHelicopterCreatorGuard)
   @Delete(':id')
   remove(@Param('id') id: string): Observable<void> {
     return this.attributeHelicopterService.remove(+id);

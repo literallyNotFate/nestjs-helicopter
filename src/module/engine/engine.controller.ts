@@ -15,12 +15,14 @@ import {
   Delete,
   HttpStatus,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { EngineService } from './engine.service';
 import { CreateEngineDto } from './dto/create-engine.dto';
 import { UpdateEngineDto } from './dto/update-engine.dto';
 import { EngineDto } from './dto/engine.dto';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
+import { EngineCreatorGuard } from '../../common/guards/engine-creator.guard';
 
 @ApiTags('Engine')
 @ApiBearerAuth()
@@ -40,8 +42,8 @@ export class EngineController {
     description: 'Failed to create engine',
   })
   @Post()
-  create(@Body() createEngineDto: CreateEngineDto) {
-    return from(this.engineService.create(createEngineDto));
+  create(@Req() request, @Body() createEngineDto: CreateEngineDto) {
+    return from(this.engineService.create(request, createEngineDto));
   }
 
   @ApiOperation({ summary: 'Endpoint to get all engines' })
@@ -85,6 +87,7 @@ export class EngineController {
     description: 'Failed to edit engine',
   })
   @Patch(':id')
+  @UseGuards(EngineCreatorGuard)
   update(
     @Param('id') id: string,
     @Body() updateEngineDto: UpdateEngineDto,
@@ -102,6 +105,7 @@ export class EngineController {
     description: 'Failed to delete engine',
   })
   @Delete(':id')
+  @UseGuards(EngineCreatorGuard)
   remove(@Param('id') id: string): Observable<void> {
     return this.engineService.remove(+id);
   }
