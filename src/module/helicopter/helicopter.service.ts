@@ -18,6 +18,7 @@ import {
   from,
   map,
   mergeMap,
+  switchMap,
   toArray,
 } from 'rxjs';
 import { HelicopterDto } from './dto/helicopter.dto';
@@ -42,50 +43,71 @@ export class HelicopterService {
     @Req() request,
     createHelicopterDto: CreateHelicopterDto,
   ): Observable<HelicopterDto> {
-    const { attributeHelicopterId, ...rest } = createHelicopterDto;
+    const { attributeHelicopterId, engineId, ...rest } = createHelicopterDto;
 
     return from(
       this.attributeHelicopterRepository.findOne({
         where: { id: attributeHelicopterId },
-        relations: ['attributes'],
+        relations: ['attributes', 'creator'],
       }),
     ).pipe(
-      mergeMap((foundAttribute: AttributeHelicopter) => {
+      switchMap((foundAttribute: AttributeHelicopter) => {
         if (!foundAttribute) {
           throw new NotFoundException(
             `AttributeHelicopter with ID:${attributeHelicopterId} was not found.`,
           );
         }
 
-        return this.authService.getAuthenticatedUser(request).pipe(
-          concatMap((auth: User) => {
-            const newHelicopter = this.helicopterRepository.create({
-              ...rest,
-              attributeHelicopter: foundAttribute,
-              creator: auth,
-            });
+        return from(
+          this.engineRepository.findOne({
+            where: { id: engineId },
+            relations: ['creator'],
+          }),
+        ).pipe(
+          switchMap((foundEngine: Engine) => {
+            if (!foundEngine) {
+              throw new NotFoundException(
+                `Engine with ID:${engineId} was not found.`,
+              );
+            }
 
-            return from(this.helicopterRepository.save(newHelicopter)).pipe(
-              map((helicopter: Helicopter) => {
-                const helicopterDto = plainToInstance(
-                  HelicopterDto,
-                  helicopter,
+            return this.authService.getAuthenticatedUser(request).pipe(
+              concatMap((auth: User) => {
+                const newHelicopter = this.helicopterRepository.create({
+                  ...rest,
+                  attributeHelicopter: foundAttribute,
+                  engine: foundEngine,
+                  creator: auth,
+                });
+
+                return from(this.helicopterRepository.save(newHelicopter)).pipe(
+                  map((helicopter: Helicopter) => {
+                    const helicopterDto = plainToInstance(
+                      HelicopterDto,
+                      helicopter,
+                    );
+
+                    if (helicopter.attributeHelicopter) {
+                      const attributeHelicopterResponse =
+                        AttributeHelicopterResponseDto.ToResponse(
+                          foundAttribute,
+                        );
+                      helicopterDto.attributeHelicopter =
+                        attributeHelicopterResponse;
+                    }
+
+                    return helicopterDto;
+                  }),
+                  catchError(() => {
+                    throw new InternalServerErrorException(
+                      'Failed to create helicopter.',
+                    );
+                  }),
                 );
-
-                if (helicopter.attributeHelicopter) {
-                  const attributeHelicopterResponse =
-                    AttributeHelicopterResponseDto.ToResponse(foundAttribute);
-                  helicopterDto.attributeHelicopter =
-                    attributeHelicopterResponse;
-                }
-                return helicopterDto;
               }),
             );
           }),
         );
-      }),
-      catchError(() => {
-        throw new InternalServerErrorException('Failed to create helicopter.');
       }),
     );
   }

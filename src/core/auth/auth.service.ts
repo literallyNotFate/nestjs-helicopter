@@ -9,15 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
 
 import * as bcrypt from 'bcrypt';
-import {
-  Observable,
-  catchError,
-  concatMap,
-  from,
-  map,
-  switchMap,
-  throwError,
-} from 'rxjs';
+import { Observable, catchError, concatMap, from, map, switchMap } from 'rxjs';
 import { JWT_EXPIRATION, JWT_SECRET } from './constants';
 import { User } from 'src/module/user/entities/user.entity';
 import { TokensDto } from './dto/tokens.dto';
@@ -49,9 +41,7 @@ export class AuthService {
                 return this.getJWT(created.id, created.email);
               }),
               catchError(() => {
-                return throwError(
-                  () => new InternalServerErrorException('Failed to register'),
-                );
+                throw new InternalServerErrorException('Failed to register');
               }),
             );
           }),
@@ -78,31 +68,30 @@ export class AuthService {
     );
   }
 
-  getAuth(email: string, password: string): Observable<TokensDto> {
+  login(email: string, password: string): Observable<TokensDto> {
     return from(this.usersRepository.getByEmail(email)).pipe(
-      map((user: User) => {
-        if (!user) {
-          throw new BadRequestException('Wrong credentials provided.');
-        }
-        return user;
-      }),
       concatMap((user: User) => {
-        return from(AuthService.verifyPassword(password, user.password)).pipe(
-          map((isPasswordValid: boolean) => {
+        if (!user) {
+          throw new BadRequestException('Wrong credentials provided');
+        }
+
+        return from(this.verifyPassword(password, user.password)).pipe(
+          switchMap((isPasswordValid: boolean) => {
             if (!isPasswordValid) {
-              throw new BadRequestException('Wrong credentials provided.');
+              throw new BadRequestException('Wrong credentials provided');
             }
-            return user;
+
+            return this.getJWT(user.id, user.email);
+          }),
+          catchError(() => {
+            throw new InternalServerErrorException('Failed to login');
           }),
         );
-      }),
-      concatMap((user: User) => {
-        return this.getJWT(user.id, user.email);
       }),
     );
   }
 
-  static async verifyPassword(password: string, hashed: string) {
+  async verifyPassword(password: string, hashed: string) {
     const isPasswordMatching = await bcrypt.compare(password, hashed);
     return isPasswordMatching;
   }

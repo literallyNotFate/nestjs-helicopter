@@ -43,6 +43,6 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('login')
   login(@Body() loginData: LoginDto): Observable<TokensDto> {
-    return from(this.authService.getAuth(loginData.email, loginData.password));
+    return from(this.authService.login(loginData.email, loginData.password));
   }
 }

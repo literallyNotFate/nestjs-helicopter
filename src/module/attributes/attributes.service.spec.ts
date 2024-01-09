@@ -11,9 +11,15 @@ import {
 } from '@nestjs/common';
 import { CreateAttributeDto } from './dto/create-attribute.dto';
 import { UpdateAttributeDto } from './dto/update-attribute.dto';
+import { User } from '../user/entities/user.entity';
+import { Gender } from '../../common/enums/gender.enum';
+import { AuthService } from '../../core/auth/auth.service';
+import { JwtService } from '@nestjs/jwt';
+import { UserRepository } from '../user/user.repository';
 
 describe('AttributesService', () => {
   let service: AttributesService;
+  let authService: AuthService;
   const REPOSITORY_TOKEN = getRepositoryToken(Attribute);
 
   const mockAttributeRepository = {
@@ -25,10 +31,40 @@ describe('AttributesService', () => {
     merge: jest.fn(),
   };
 
+  const user: User = {
+    id: 1,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    firstName: 'data',
+    lastName: 'data',
+    email: 'data@gmail.com',
+    password: '$3124R$fv.xfsf',
+    gender: Gender.FEMALE,
+    phoneNumber: '12345',
+    attributes: [],
+    helicopters: [],
+    attributeHelicopters: [],
+    engines: [],
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AttributesService,
+        AuthService,
+        {
+          provide: JwtService,
+          useValue: {
+            signAsync: jest.fn(),
+            verify: jest.fn(),
+          },
+        },
+        {
+          provide: UserRepository,
+          useValue: {
+            getByEmail: jest.fn(),
+          },
+        },
         {
           provide: REPOSITORY_TOKEN,
           useValue: mockAttributeRepository,
@@ -37,6 +73,7 @@ describe('AttributesService', () => {
     }).compile();
 
     service = module.get<AttributesService>(AttributesService);
+    authService = module.get<AuthService>(AuthService);
   });
 
   afterEach(() => {
@@ -54,6 +91,7 @@ describe('AttributesService', () => {
       attributeHelicopters: [],
       createdAt: new Date(),
       updatedAt: new Date(),
+      creator: user,
     };
 
     it('should create an attribute', async () => {
@@ -64,12 +102,18 @@ describe('AttributesService', () => {
         .spyOn(mockAttributeRepository, 'save')
         .mockReturnValue(of(attributeResult));
 
-      const observableResult = service.create(createAttributeDto);
+      jest
+        .spyOn(authService, 'getAuthenticatedUser')
+        .mockImplementation(() => of(user));
+
+      const observableResult = service.create({ user }, createAttributeDto);
       const result = await observableResult.toPromise();
 
-      expect(mockAttributeRepository.create).toHaveBeenCalledWith(
-        createAttributeDto,
-      );
+      expect(authService.getAuthenticatedUser).toHaveBeenCalled();
+      expect(mockAttributeRepository.create).toHaveBeenCalledWith({
+        ...createAttributeDto,
+        creator: user,
+      });
       expect(mockAttributeRepository.save).toHaveBeenCalledWith(
         attributeResult,
       );
@@ -84,8 +128,12 @@ describe('AttributesService', () => {
         .spyOn(mockAttributeRepository, 'save')
         .mockReturnValue(throwError(new Error('Database error')));
 
+      jest
+        .spyOn(authService, 'getAuthenticatedUser')
+        .mockImplementation(() => of(user));
+
       try {
-        await service.create(createAttributeDto);
+        await service.create({ user }, createAttributeDto);
       } catch (error) {
         expect(error).toBeInstanceOf(InternalServerErrorException);
         expect(error.message).toBe('Failed to create attribute.');
@@ -100,6 +148,7 @@ describe('AttributesService', () => {
       attributeHelicopters: [],
       createdAt: new Date(),
       updatedAt: new Date(),
+      creator: user,
     };
 
     it('should find all attributes', async () => {
@@ -112,8 +161,10 @@ describe('AttributesService', () => {
       const find = service.findAll();
       const result = await lastValueFrom(find);
 
-      expect(result).toEqual(attributes);
-      expect(mockAttributeRepository.find).toHaveBeenCalled();
+      expect(result).toEqual(plainToInstance(AttributesDto, attributes));
+      expect(mockAttributeRepository.find).toHaveBeenCalledWith({
+        relations: ['creator'],
+      });
     });
 
     it('should throw InternalServerErrorException if an error occurs', async () => {
@@ -139,6 +190,7 @@ describe('AttributesService', () => {
       attributeHelicopters: [],
       createdAt: new Date(),
       updatedAt: new Date(),
+      creator: user,
     };
 
     it('should find attribute by ID', async () => {
@@ -151,6 +203,7 @@ describe('AttributesService', () => {
 
       expect(mockAttributeRepository.findOne).toHaveBeenCalledWith({
         where: { id: attributeId },
+        relations: ['creator'],
       });
       expect(result).toEqual(plainToInstance(AttributesDto, attributeResult));
     });
@@ -194,6 +247,7 @@ describe('AttributesService', () => {
       attributeHelicopters: [],
       createdAt: new Date(),
       updatedAt: new Date(),
+      creator: user,
     };
 
     const updated: Attribute = {
@@ -213,6 +267,7 @@ describe('AttributesService', () => {
 
       expect(mockAttributeRepository.findOne).toHaveBeenCalledWith({
         where: { id: attributeId },
+        relations: ['creator'],
       });
 
       expect(mockAttributeRepository.merge).toHaveBeenCalledWith(
@@ -221,7 +276,7 @@ describe('AttributesService', () => {
       );
 
       expect(mockAttributeRepository.save).toHaveBeenCalledWith(updated);
-      expect(result).toEqual(updated);
+      expect(result).toEqual(plainToInstance(AttributesDto, updated));
     });
 
     it('should throw NotFoundException if attribute is not found by ID', async () => {
@@ -235,6 +290,7 @@ describe('AttributesService', () => {
 
       expect(mockAttributeRepository.findOne).toHaveBeenCalledWith({
         where: { id: attributeId },
+        relations: ['creator'],
       });
 
       expect(mockAttributeRepository.merge).not.toHaveBeenCalled();
@@ -262,6 +318,7 @@ describe('AttributesService', () => {
       attributeHelicopters: [],
       createdAt: new Date(),
       updatedAt: new Date(),
+      creator: user,
     };
 
     it('should remove attribute', async () => {

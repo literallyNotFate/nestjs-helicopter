@@ -1,3 +1,5 @@
+import { UserDto } from '../../module/user/dto/user.dto';
+import { plainToInstance } from 'class-transformer';
 import { AttributeHelicopterResponseDto } from './dto/attribute-helicopter-response.dto';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AttributeHelicopterController } from './attribute-helicopter.controller';
@@ -7,17 +9,47 @@ import { Attribute } from '../attributes/entities/attribute.entity';
 import { AttributeHelicopter } from './entities/attribute-helicopter.entity';
 import { of } from 'rxjs';
 import { UpdateAttributeHelicopterDto } from './dto/update-attribute-helicopter.dto';
+import { User } from '../user/entities/user.entity';
+import { Gender } from '../../common/enums/gender.enum';
+import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
+import { AttributeHelicopterCreatorGuard } from '../../common/guards/attribute-helicopter-creator.guard';
+import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import { isGuarded } from '../../../test/utils';
 
 describe('AttributeHelicopterController', () => {
   let controller: AttributeHelicopterController;
   let service: AttributeHelicopterService;
 
-  const mockAttributeHelicopterContoller = {
+  const mockAttributeHelicopterService = {
     create: jest.fn(),
     findAll: jest.fn(),
     findOne: jest.fn(),
     update: jest.fn(),
     remove: jest.fn(),
+  };
+
+  const mockJwtAuthGuard = {
+    canActivate: jest.fn().mockReturnValue(false),
+  };
+
+  const mockAttributeHelicopterCreatorGuard = {
+    canActivate: jest.fn().mockReturnValue(false),
+  };
+
+  const user: User = {
+    id: 1,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    firstName: 'data',
+    lastName: 'data',
+    email: 'data@gmail.com',
+    password: '$3124R$fv.xfsf',
+    gender: Gender.FEMALE,
+    phoneNumber: '12345',
+    attributes: [],
+    helicopters: [],
+    attributeHelicopters: [],
+    engines: [],
   };
 
   beforeEach(async () => {
@@ -26,7 +58,15 @@ describe('AttributeHelicopterController', () => {
       providers: [
         {
           provide: AttributeHelicopterService,
-          useValue: mockAttributeHelicopterContoller,
+          useValue: mockAttributeHelicopterService,
+        },
+        {
+          provide: JwtAuthGuard,
+          useValue: mockJwtAuthGuard,
+        },
+        {
+          provide: AttributeHelicopterCreatorGuard,
+          useValue: mockAttributeHelicopterCreatorGuard,
         },
       ],
     }).compile();
@@ -43,7 +83,7 @@ describe('AttributeHelicopterController', () => {
     jest.clearAllMocks();
   });
 
-  it('should create an attribute helicopter', async () => {
+  describe('create', () => {
     const createAttributeHelicopterDto: CreateAttributeHelicopterDto = {
       attributeIds: [1, 2],
       values: ['Value 1', 'Value 2'],
@@ -56,6 +96,7 @@ describe('AttributeHelicopterController', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         attributeHelicopters: [],
+        creator: user,
       },
       {
         id: createAttributeHelicopterDto.attributeIds[1],
@@ -63,6 +104,7 @@ describe('AttributeHelicopterController', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         attributeHelicopters: [],
+        creator: user,
       },
     ];
 
@@ -73,41 +115,66 @@ describe('AttributeHelicopterController', () => {
       attributes,
       values: createAttributeHelicopterDto.values,
       helicopters: [],
+      creator: user,
     };
 
     const expectedResponse: AttributeHelicopterResponseDto =
       AttributeHelicopterResponseDto.ToResponse(createdAttributeHelicopter);
 
-    jest.spyOn(service, 'create').mockReturnValue(of(expectedResponse));
+    it('should create an attribute helicopter', async () => {
+      jest.spyOn(service, 'create').mockReturnValue(of(expectedResponse));
 
-    const result = await controller
-      .create(createAttributeHelicopterDto)
-      .toPromise();
+      const result = await controller
+        .create({ user }, createAttributeHelicopterDto)
+        .toPromise();
 
-    expect(service.create).toHaveBeenCalledWith(createAttributeHelicopterDto);
-    expect(result).toBe(expectedResponse);
+      expect(service.create).toHaveBeenCalledWith(
+        { user },
+        createAttributeHelicopterDto,
+      );
+      expect(result).toBe(expectedResponse);
+    });
+
+    it('should throw UnauthorizedException if user is not authenticated', async () => {
+      try {
+        await controller.create({} as any, createAttributeHelicopterDto);
+      } catch (error) {
+        expect(error).toBeInstanceOf(UnauthorizedException);
+      }
+    });
   });
 
-  it('should return all attribute helicopters', async () => {
+  describe('findAll', () => {
     const expectedResponse: AttributeHelicopterResponseDto = {
       id: 1,
       createdAt: new Date(),
       updatedAt: new Date(),
       attributes: [],
       helicopters: [],
+      creator: plainToInstance(UserDto, user),
     };
 
     const attributeHelicopters = [expectedResponse];
 
-    jest.spyOn(service, 'findAll').mockReturnValue(of(attributeHelicopters));
+    it('should return all attribute helicopters', async () => {
+      jest.spyOn(service, 'findAll').mockReturnValue(of(attributeHelicopters));
 
-    const result = await controller.findAll().toPromise();
+      const result = await controller.findAll().toPromise();
 
-    expect(service.findAll).toHaveBeenCalled();
-    expect(result).toEqual(attributeHelicopters);
+      expect(service.findAll).toHaveBeenCalled();
+      expect(result).toEqual(attributeHelicopters);
+    });
+
+    it('should throw UnauthorizedException if user is not authenticated', async () => {
+      try {
+        await controller.findAll();
+      } catch (error) {
+        expect(error).toBeInstanceOf(UnauthorizedException);
+      }
+    });
   });
 
-  it('should return attribute helicopter by ID', async () => {
+  describe('findOne', () => {
     const attributeHelicopterId: number = 1;
 
     const expectedResponse: AttributeHelicopterResponseDto = {
@@ -116,19 +183,30 @@ describe('AttributeHelicopterController', () => {
       updatedAt: new Date(),
       attributes: [],
       helicopters: [],
+      creator: plainToInstance(UserDto, user),
     };
 
-    jest.spyOn(service, 'findOne').mockReturnValue(of(expectedResponse));
+    it('should return attribute helicopter by ID', async () => {
+      jest.spyOn(service, 'findOne').mockReturnValue(of(expectedResponse));
 
-    const result = await controller
-      .findOne(attributeHelicopterId.toString())
-      .toPromise();
+      const result = await controller
+        .findOne(attributeHelicopterId.toString())
+        .toPromise();
 
-    expect(service.findOne).toHaveBeenCalled();
-    expect(result).toEqual(expectedResponse);
+      expect(service.findOne).toHaveBeenCalled();
+      expect(result).toEqual(expectedResponse);
+    });
+
+    it('should throw UnauthorizedException if user is not authenticated', async () => {
+      try {
+        await controller.findOne(attributeHelicopterId.toString());
+      } catch (error) {
+        expect(error).toBeInstanceOf(UnauthorizedException);
+      }
+    });
   });
 
-  it('should update attribute helicopter by ID', async () => {
+  describe('update', () => {
     const attributeHelicopterId: number = 1;
 
     const updateHelicopterAttriuteDto: UpdateAttributeHelicopterDto = {
@@ -143,6 +221,7 @@ describe('AttributeHelicopterController', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         attributeHelicopters: [],
+        creator: user,
       },
       {
         id: updateHelicopterAttriuteDto.attributeIds[1],
@@ -150,6 +229,7 @@ describe('AttributeHelicopterController', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         attributeHelicopters: [],
+        creator: user,
       },
     ];
 
@@ -160,6 +240,7 @@ describe('AttributeHelicopterController', () => {
       attributes: [],
       values: [],
       helicopters: [],
+      creator: user,
     };
 
     const updatedAttributeHelicopter: AttributeHelicopter = {
@@ -169,31 +250,97 @@ describe('AttributeHelicopterController', () => {
       values: updateHelicopterAttriuteDto.values,
       attributes,
       helicopters: [],
+      creator: user,
     };
 
     const expected = AttributeHelicopterResponseDto.ToResponse(
       updatedAttributeHelicopter,
     );
 
-    jest.spyOn(service, 'update').mockReturnValue(of(expected));
+    it('should update attribute helicopter by ID', async () => {
+      jest.spyOn(service, 'update').mockReturnValue(of(expected));
 
-    const result = await controller
-      .update(attributeHelicopterId.toString(), updateHelicopterAttriuteDto)
-      .toPromise();
+      const result = await controller
+        .update(attributeHelicopterId.toString(), updateHelicopterAttriuteDto)
+        .toPromise();
 
-    expect(service.update).toHaveBeenCalledWith(
-      attributeHelicopterId,
-      updateHelicopterAttriuteDto,
-    );
-    expect(result).toEqual(expected);
+      expect(service.update).toHaveBeenCalledWith(
+        attributeHelicopterId,
+        updateHelicopterAttriuteDto,
+      );
+      expect(result).toEqual(expected);
+    });
+
+    it('should throw UnauthorizedException if user is not authenticated', async () => {
+      try {
+        await controller.update(
+          attributeHelicopterId.toString(),
+          updateHelicopterAttriuteDto,
+        );
+      } catch (error) {
+        expect(error).toBeInstanceOf(UnauthorizedException);
+      }
+    });
+
+    it('should be protected by AttributeHelicopterCreatorGuard', () => {
+      expect(
+        isGuarded(
+          AttributeHelicopterController.prototype.update,
+          AttributeHelicopterCreatorGuard,
+        ),
+      ).toBe(true);
+    });
+
+    it('should throw ForbiddenException if user is not the creator', async () => {
+      try {
+        await controller.update(
+          attributeHelicopterId.toString(),
+          updateHelicopterAttriuteDto,
+        );
+      } catch (error) {
+        expect(error).toBeInstanceOf(ForbiddenException);
+      }
+    });
   });
 
-  it('should remove attribute helicopter by ID', async () => {
+  describe('remove', () => {
     const attributeHelicopterId: number = 1;
-    jest.spyOn(service, 'remove').mockReturnValue(of());
 
-    await controller.remove(attributeHelicopterId.toString()).toPromise();
+    it('should remove attribute helicopter by ID', async () => {
+      jest.spyOn(service, 'remove').mockReturnValue(of());
+      await controller.remove(attributeHelicopterId.toString()).toPromise();
+      expect(service.remove).toHaveBeenCalledWith(attributeHelicopterId);
+    });
 
-    expect(service.remove).toHaveBeenCalledWith(attributeHelicopterId);
+    it('should throw UnauthorizedException if user is not authenticated', async () => {
+      try {
+        await controller.remove(attributeHelicopterId.toString());
+      } catch (error) {
+        expect(error).toBeInstanceOf(UnauthorizedException);
+      }
+    });
+
+    it('should be protected by AttributeHelicopterCreatorGuard', () => {
+      expect(
+        isGuarded(
+          AttributeHelicopterController.prototype.remove,
+          AttributeHelicopterCreatorGuard,
+        ),
+      ).toBe(true);
+    });
+
+    it('should throw ForbiddenException if user is not the creator', async () => {
+      try {
+        await controller.remove(attributeHelicopterId.toString());
+      } catch (error) {
+        expect(error).toBeInstanceOf(ForbiddenException);
+      }
+    });
+  });
+
+  describe('JwtAuthGuard', () => {
+    it('should be protected by JwtAuthGuard', () => {
+      expect(isGuarded(AttributeHelicopterController, JwtAuthGuard)).toBe(true);
+    });
   });
 });

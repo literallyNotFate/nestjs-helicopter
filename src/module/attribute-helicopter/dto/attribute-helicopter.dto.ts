@@ -1,6 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AttributesDto } from '../../attributes/dto/attributes.dto';
 import { HelicopterDto } from '../../helicopter/dto/helicopter.dto';
+import { UserDto } from '../../user/dto/user.dto';
+import { Type } from 'class-transformer';
 
 export class AttributeHelicopterDto {
   @ApiProperty({ example: 1, type: Number })
@@ -36,4 +38,8 @@ export class AttributeHelicopterDto {
     isArray: true,
   })
   helicopters?: HelicopterDto[];
+
+  @ApiPropertyOptional({ type: () => UserDto })
+  @Type(() => UserDto)
+  creator?: UserDto;
 }

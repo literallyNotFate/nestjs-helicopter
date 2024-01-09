@@ -12,9 +12,15 @@ import {
 } from '@nestjs/common';
 import { lastValueFrom, of, throwError } from 'rxjs';
 import { UpdateEngineDto } from './dto/update-engine.dto';
+import { AuthService } from '../../core/auth/auth.service';
+import { JwtService } from '@nestjs/jwt';
+import { UserRepository } from '../user/user.repository';
+import { Gender } from '../../common/enums/gender.enum';
+import { User } from '../user/entities/user.entity';
 
 describe('EngineService', () => {
   let service: EngineService;
+  let authService: AuthService;
   let helicopterRepository;
   const REPOSITORY_TOKEN = getRepositoryToken(Engine);
 
@@ -27,10 +33,40 @@ describe('EngineService', () => {
     merge: jest.fn(),
   };
 
+  const user: User = {
+    id: 1,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    firstName: 'data',
+    lastName: 'data',
+    email: 'data@gmail.com',
+    password: '$3124R$fv.xfsf',
+    gender: Gender.FEMALE,
+    phoneNumber: '12345',
+    attributes: [],
+    helicopters: [],
+    attributeHelicopters: [],
+    engines: [],
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         EngineService,
+        AuthService,
+        {
+          provide: JwtService,
+          useValue: {
+            signAsync: jest.fn(),
+            verify: jest.fn(),
+          },
+        },
+        {
+          provide: UserRepository,
+          useValue: {
+            getByEmail: jest.fn(),
+          },
+        },
         {
           provide: REPOSITORY_TOKEN,
           useValue: mockEngineRepository,
@@ -46,6 +82,7 @@ describe('EngineService', () => {
 
     service = module.get<EngineService>(EngineService);
     helicopterRepository = module.get(getRepositoryToken(Helicopter));
+    authService = module.get<AuthService>(AuthService);
   });
 
   afterEach(() => {
@@ -69,16 +106,25 @@ describe('EngineService', () => {
       model: 'Model',
       hp: 500,
       helicopters: [],
+      creator: user,
     };
 
     it('should create a new engine', async () => {
       jest.spyOn(mockEngineRepository, 'create').mockReturnValue(engineResult);
       jest.spyOn(mockEngineRepository, 'save').mockResolvedValue(engineResult);
 
-      const observableResult = service.create(createEngineDto);
+      jest
+        .spyOn(authService, 'getAuthenticatedUser')
+        .mockImplementation(() => of(user));
+
+      const observableResult = service.create({ user }, createEngineDto);
       const result = await observableResult.toPromise();
 
-      expect(mockEngineRepository.create).toHaveBeenCalledWith(createEngineDto);
+      expect(authService.getAuthenticatedUser).toHaveBeenCalled();
+      expect(mockEngineRepository.create).toHaveBeenCalledWith({
+        ...createEngineDto,
+        creator: user,
+      });
       expect(mockEngineRepository.save).toHaveBeenCalledWith(engineResult);
       expect(result).toEqual(plainToInstance(EngineDto, engineResult));
     });
@@ -87,11 +133,15 @@ describe('EngineService', () => {
       jest.spyOn(mockEngineRepository, 'create').mockReturnValue(engineResult);
       jest.spyOn(mockEngineRepository, 'save').mockResolvedValue(engineResult);
 
+      jest
+        .spyOn(authService, 'getAuthenticatedUser')
+        .mockImplementation(() => of(user));
+
       try {
-        await service.create(createEngineDto);
+        await service.create({ user }, createEngineDto);
       } catch (error) {
         expect(error).toBeInstanceOf(InternalServerErrorException);
-        expect(error.message).toBe('Failed to create attribute.');
+        expect(error.message).toBe('Failed to create engine.');
       }
     });
   });
@@ -106,6 +156,7 @@ describe('EngineService', () => {
       model: 'Model',
       hp: 500,
       helicopters: [],
+      creator: user,
     };
 
     it('should find all engines', async () => {
@@ -117,7 +168,13 @@ describe('EngineService', () => {
       const result = await lastValueFrom(find);
 
       expect(result).toEqual(plainToInstance(EngineDto, engines));
-      expect(mockEngineRepository.find).toHaveBeenCalled();
+      expect(mockEngineRepository.find).toHaveBeenCalledWith({
+        relations: [
+          'helicopters',
+          'helicopters.attributeHelicopter',
+          'creator',
+        ],
+      });
     });
 
     it('should throw InternalServerErrorException if an error occurs', async () => {
@@ -144,6 +201,7 @@ describe('EngineService', () => {
       model: 'Model',
       hp: 500,
       helicopters: [],
+      creator: user,
     };
 
     it('should find engine by ID', async () => {
@@ -155,7 +213,11 @@ describe('EngineService', () => {
 
       expect(mockEngineRepository.findOne).toHaveBeenCalledWith({
         where: { id: engineId },
-        relations: ['helicopters', 'helicopters.attributeHelicopter'],
+        relations: [
+          'helicopters',
+          'helicopters.attributeHelicopter',
+          'creator',
+        ],
       });
 
       expect(result).toEqual(plainToInstance(EngineDto, engineResult));
@@ -205,6 +267,7 @@ describe('EngineService', () => {
       model: 'Model ABC',
       hp: 300,
       helicopters: [],
+      creator: user,
     };
 
     const updated: Engine = {
@@ -227,6 +290,7 @@ describe('EngineService', () => {
 
       expect(mockEngineRepository.findOne).toHaveBeenCalledWith({
         where: { id: engineId },
+        relations: ['creator'],
       });
       expect(mockEngineRepository.merge).toHaveBeenCalledWith(
         found,
@@ -244,6 +308,7 @@ describe('EngineService', () => {
       ).rejects.toThrow(NotFoundException);
       expect(mockEngineRepository.findOne).toHaveBeenCalledWith({
         where: { id: engineId },
+        relations: ['creator'],
       });
     });
 
@@ -271,6 +336,7 @@ describe('EngineService', () => {
       model: 'Model ABC',
       hp: 300,
       helicopters: [],
+      creator: user,
     };
 
     it('should remove engine', async () => {
@@ -292,7 +358,6 @@ describe('EngineService', () => {
     });
 
     it('should throw NotFoundException if engine is not found by ID', async () => {
-      const engineId: number = 1;
       mockEngineRepository.findOne.mockResolvedValue(null);
 
       await expect(service.remove(engineId).toPromise()).rejects.toThrow(

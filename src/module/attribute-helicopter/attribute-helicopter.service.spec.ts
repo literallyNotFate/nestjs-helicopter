@@ -1,3 +1,5 @@
+import { UserDto } from '../../module/user/dto/user.dto';
+import { plainToInstance } from 'class-transformer';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AttributeHelicopterService } from './attribute-helicopter.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
@@ -13,9 +15,15 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { UpdateAttributeHelicopterDto } from './dto/update-attribute-helicopter.dto';
+import { User } from '../user/entities/user.entity';
+import { Gender } from '../../common/enums/gender.enum';
+import { AuthService } from '../../core/auth/auth.service';
+import { JwtService } from '@nestjs/jwt';
+import { UserRepository } from '../user/user.repository';
 
 describe('AttributeHelicopterService', () => {
   let service: AttributeHelicopterService;
+  let authService: AuthService;
   const REPOSITORY_TOKEN = getRepositoryToken(AttributeHelicopter);
 
   let attributeRepository;
@@ -31,10 +39,40 @@ describe('AttributeHelicopterService', () => {
     delete: jest.fn(),
   };
 
+  const user: User = {
+    id: 1,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    firstName: 'data',
+    lastName: 'data',
+    email: 'data@gmail.com',
+    password: '$3124R$fv.xfsf',
+    gender: Gender.FEMALE,
+    phoneNumber: '12345',
+    attributes: [],
+    helicopters: [],
+    attributeHelicopters: [],
+    engines: [],
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AttributeHelicopterService,
+        AuthService,
+        {
+          provide: JwtService,
+          useValue: {
+            signAsync: jest.fn(),
+            verify: jest.fn(),
+          },
+        },
+        {
+          provide: UserRepository,
+          useValue: {
+            getByEmail: jest.fn(),
+          },
+        },
         {
           provide: REPOSITORY_TOKEN,
           useValue: mockAttributeHelicopterRepository,
@@ -76,6 +114,7 @@ describe('AttributeHelicopterService', () => {
     );
     attributeRepository = module.get(getRepositoryToken(Attribute));
     helicopterRepository = module.get(getRepositoryToken(Helicopter));
+    authService = module.get<AuthService>(AuthService);
   });
 
   afterEach(() => {
@@ -95,6 +134,7 @@ describe('AttributeHelicopterService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         attributeHelicopters: [],
+        creator: user,
       },
       {
         id: createAttributeHelicopterDto.attributeIds[1],
@@ -102,6 +142,7 @@ describe('AttributeHelicopterService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         attributeHelicopters: [],
+        creator: user,
       },
     ];
 
@@ -112,6 +153,7 @@ describe('AttributeHelicopterService', () => {
       attributes,
       values: createAttributeHelicopterDto.values,
       helicopters: [],
+      creator: user,
     };
 
     const expectedResponse: AttributeHelicopterResponseDto = {
@@ -126,6 +168,7 @@ describe('AttributeHelicopterService', () => {
             name: attributes[0].name,
             createdAt: attributes[0].createdAt,
             updatedAt: attributes[0].updatedAt,
+            creator: plainToInstance(UserDto, attributes[0].creator),
           },
           value: createAttributeHelicopterDto.values[0],
         },
@@ -136,15 +179,21 @@ describe('AttributeHelicopterService', () => {
             name: attributes[1].name,
             createdAt: attributes[1].createdAt,
             updatedAt: attributes[1].updatedAt,
+            creator: plainToInstance(UserDto, attributes[1].creator),
           },
           value: createAttributeHelicopterDto.values[1],
         },
       ],
       helicopters: [],
+      creator: plainToInstance(UserDto, user),
     };
 
     it('should create a new attribute helicopter', async () => {
       jest.spyOn(attributeRepository, 'find').mockReturnValue(of(attributes));
+
+      jest
+        .spyOn(authService, 'getAuthenticatedUser')
+        .mockImplementation(() => of(user));
 
       jest
         .spyOn(mockAttributeHelicopterRepository, 'create')
@@ -154,7 +203,7 @@ describe('AttributeHelicopterService', () => {
         .mockReturnValue(of(createdAttributeHelicopter));
 
       const result = await service
-        .create(createAttributeHelicopterDto)
+        .create({ user }, createAttributeHelicopterDto)
         .toPromise();
 
       expect(result).toMatchObject(expectedResponse);
@@ -171,6 +220,7 @@ describe('AttributeHelicopterService', () => {
       expect(mockAttributeHelicopterRepository.create).toHaveBeenCalledWith({
         values: createAttributeHelicopterDto.values,
         attributes,
+        creator: user,
       });
 
       expect(mockAttributeHelicopterRepository.save).toHaveBeenCalledWith(
@@ -183,8 +233,12 @@ describe('AttributeHelicopterService', () => {
         .spyOn(attributeRepository, 'find')
         .mockReturnValue(of(attributes[0]));
 
+      jest
+        .spyOn(authService, 'getAuthenticatedUser')
+        .mockImplementation(() => of(user));
+
       await expect(
-        service.create(createAttributeHelicopterDto).toPromise(),
+        service.create({ user }, createAttributeHelicopterDto).toPromise(),
       ).rejects.toThrowError(BadRequestException);
 
       expect(attributeRepository.find).toHaveBeenCalledWith({
@@ -203,11 +257,15 @@ describe('AttributeHelicopterService', () => {
         values: ['Value 1', 'Value 2'],
       };
 
+      jest
+        .spyOn(authService, 'getAuthenticatedUser')
+        .mockImplementation(() => of(user));
+
       jest.spyOn(attributeRepository, 'find').mockReturnValue(of(attributes));
 
-      await expect(service.create(example).toPromise()).rejects.toThrowError(
-        BadRequestException,
-      );
+      await expect(
+        service.create({ user }, example).toPromise(),
+      ).rejects.toThrowError(BadRequestException);
 
       expect(attributeRepository.find).toHaveBeenCalledWith({
         where: {
@@ -221,13 +279,18 @@ describe('AttributeHelicopterService', () => {
 
     it('should throw InternalServerErrorException if an error occurs', async () => {
       jest.spyOn(attributeRepository, 'find').mockReturnValue(of(attributes));
+      jest
+        .spyOn(authService, 'getAuthenticatedUser')
+        .mockImplementation(() => of(user));
 
       mockAttributeHelicopterRepository.save.mockResolvedValue(
         createdAttributeHelicopter,
       );
 
       try {
-        await await service.create(createAttributeHelicopterDto).toPromise();
+        await await service
+          .create({ user }, createAttributeHelicopterDto)
+          .toPromise();
       } catch (error) {
         expect(error).toBeInstanceOf(InternalServerErrorException);
         expect(error.message).toBe('Failed to create attribute helicopter.');
@@ -252,6 +315,7 @@ describe('AttributeHelicopterService', () => {
       attributes: [],
       values: [],
       helicopters: [],
+      creator: user,
     };
 
     const expectedResponse: AttributeHelicopterResponseDto = {
@@ -260,12 +324,13 @@ describe('AttributeHelicopterService', () => {
       updatedAt: new Date(),
       attributes: [],
       helicopters: [],
+      creator: plainToInstance(UserDto, user),
     };
 
-    it('should find all attribute helicopters', async () => {
-      const attributes = [attribute];
-      const attributeHelicopters = [expectedResponse];
+    const attributes = [attribute];
+    const attributeHelicopters = [expectedResponse];
 
+    it('should find all attribute helicopters', async () => {
       mockAttributeHelicopterRepository.find.mockResolvedValue(attributes);
 
       const result = await service.findAll().toPromise();
@@ -273,7 +338,7 @@ describe('AttributeHelicopterService', () => {
       expect(result).toEqual(attributeHelicopters);
 
       expect(mockAttributeHelicopterRepository.find).toHaveBeenCalledWith({
-        relations: ['attributes', 'helicopters'],
+        relations: ['attributes', 'helicopters', 'creator'],
       });
     });
 
@@ -301,6 +366,7 @@ describe('AttributeHelicopterService', () => {
       attributes: [],
       values: [],
       helicopters: [],
+      creator: user,
     };
 
     const expectedResponse: AttributeHelicopterResponseDto = {
@@ -309,6 +375,7 @@ describe('AttributeHelicopterService', () => {
       updatedAt: new Date(),
       attributes: [],
       helicopters: [],
+      creator: plainToInstance(UserDto, user),
     };
 
     it('should find attribute helicopter by ID', async () => {
@@ -320,7 +387,7 @@ describe('AttributeHelicopterService', () => {
 
       expect(mockAttributeHelicopterRepository.findOne).toHaveBeenCalledWith({
         where: { id: attributeHelicopterId },
-        relations: ['attributes', 'helicopters'],
+        relations: ['attributes', 'helicopters', 'creator'],
       });
     });
 
@@ -339,7 +406,7 @@ describe('AttributeHelicopterService', () => {
 
         expect(mockAttributeHelicopterRepository.findOne).toHaveBeenCalledWith({
           where: { id: attributeHelicopterId },
-          relations: ['attributes', 'helicopters'],
+          relations: ['attributes', 'helicopters', 'creator'],
         });
       }
     });
@@ -355,7 +422,7 @@ describe('AttributeHelicopterService', () => {
 
       expect(mockAttributeHelicopterRepository.findOne).toHaveBeenCalledWith({
         where: { id: attributeHelicopterId },
-        relations: ['attributes', 'helicopters'],
+        relations: ['attributes', 'helicopters', 'creator'],
       });
     });
   });
@@ -375,6 +442,7 @@ describe('AttributeHelicopterService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         attributeHelicopters: [],
+        creator: user,
       },
       {
         id: updateHelicopterAttriuteDto.attributeIds[1],
@@ -382,6 +450,7 @@ describe('AttributeHelicopterService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         attributeHelicopters: [],
+        creator: user,
       },
     ];
 
@@ -392,6 +461,7 @@ describe('AttributeHelicopterService', () => {
       attributes: [],
       values: [],
       helicopters: [],
+      creator: user,
     };
 
     const updatedAttributeHelicopter: AttributeHelicopter = {
@@ -401,6 +471,7 @@ describe('AttributeHelicopterService', () => {
       values: updateHelicopterAttriuteDto.values,
       attributes,
       helicopters: [],
+      creator: user,
     };
 
     const expected = AttributeHelicopterResponseDto.ToResponse(
@@ -433,7 +504,7 @@ describe('AttributeHelicopterService', () => {
 
       expect(mockAttributeHelicopterRepository.findOne).toHaveBeenCalledWith({
         where: { id: attributeHelicopterId },
-        relations: ['attributes', 'helicopters'],
+        relations: ['attributes', 'helicopters', 'creator'],
       });
 
       expect(mockAttributeHelicopterRepository.save).toHaveBeenCalledWith(
@@ -512,7 +583,7 @@ describe('AttributeHelicopterService', () => {
 
         expect(mockAttributeHelicopterRepository.findOne).toHaveBeenCalledWith({
           where: { id: attributeHelicopterId },
-          relations: ['attributes', 'helicopters'],
+          relations: ['attributes', 'helicopters', 'creator'],
         });
       }
     });
@@ -549,22 +620,6 @@ describe('AttributeHelicopterService', () => {
         where: { id: attributeHelicopterId },
         relations: ['attributes', 'helicopters'],
       });
-
-      // const attributeIds = deleteAttributeHelicopter.attributes.map(
-      //   (attr) => attr.id,
-      // );
-      // const helicopterIds = deleteAttributeHelicopter.helicopters.map(
-      //   (heli) => heli.id,
-      // );
-
-      // expect(attributeRepository.delete).toHaveBeenCalledWith(attributeIds);
-      // expect(
-      //   helicopterRepository.createQueryBuilder().delete().from().whereInIds()
-      //     .execute,
-      // ).toHaveBeenCalledWith(helicopterIds);
-      // expect(mockAttributeHelicopterRepository.remove).toHaveBeenCalledWith(
-      //   deleteAttributeHelicopter,
-      // );
     });
 
     it('should throw NotFoundException if attribute helicopter not found by ID', async () => {

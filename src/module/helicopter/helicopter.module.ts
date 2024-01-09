@@ -6,6 +6,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Engine } from '../engine/entities/engine.entity';
 import { AttributeHelicopter } from '../attribute-helicopter/entities/attribute-helicopter.entity';
 import { AuthModule } from '../../core/auth/auth.module';
+import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
+import { HelicopterCreatorGuard } from '../../common/guards/helicopter-creator.guard';
 
 @Module({
   imports: [
@@ -13,7 +15,7 @@ import { AuthModule } from '../../core/auth/auth.module';
     AuthModule,
   ],
   controllers: [HelicopterController],
-  providers: [HelicopterService],
+  providers: [HelicopterService, JwtAuthGuard, HelicopterCreatorGuard],
   exports: [HelicopterService],
 })
 export class HelicopterModule {}

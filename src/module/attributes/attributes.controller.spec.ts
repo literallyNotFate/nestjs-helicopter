@@ -1,3 +1,4 @@
+import { plainToInstance } from 'class-transformer';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AttributesController } from './attributes.controller';
 import { AttributesService } from './attributes.service';
@@ -5,17 +6,49 @@ import { CreateAttributeDto } from './dto/create-attribute.dto';
 import { AttributesDto } from './dto/attributes.dto';
 import { of } from 'rxjs';
 import { UpdateAttributeDto } from './dto/update-attribute.dto';
+import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
+import { AttributeCreatorGuard } from '../../common/guards/attribute-creator.guard';
+import { Gender } from '../../common/enums/gender.enum';
+import { User } from '../user/entities/user.entity';
+import { Attribute } from './entities/attribute.entity';
+import { isGuarded } from '../../../test/utils';
+import { UserDto } from '../user/dto/user.dto';
+import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 
 describe('AttributesController', () => {
   let controller: AttributesController;
   let service: AttributesService;
 
-  const mockAttributeController = {
+  const mockAttributeService = {
     create: jest.fn(),
     findAll: jest.fn(),
     findOne: jest.fn(),
     update: jest.fn(),
     remove: jest.fn(),
+  };
+
+  const mockJwtAuthGuard = {
+    canActivate: jest.fn().mockReturnValue(false),
+  };
+
+  const mockAttributeCreatorGuard = {
+    canActivate: jest.fn().mockReturnValue(false),
+  };
+
+  const user: User = {
+    id: 1,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    firstName: 'data',
+    lastName: 'data',
+    email: 'data@gmail.com',
+    password: '$3124R$fv.xfsf',
+    gender: Gender.FEMALE,
+    phoneNumber: '12345',
+    attributes: [],
+    helicopters: [],
+    attributeHelicopters: [],
+    engines: [],
   };
 
   beforeEach(async () => {
@@ -24,7 +57,15 @@ describe('AttributesController', () => {
       providers: [
         {
           provide: AttributesService,
-          useValue: mockAttributeController,
+          useValue: mockAttributeService,
+        },
+        {
+          provide: JwtAuthGuard,
+          useValue: mockJwtAuthGuard,
+        },
+        {
+          provide: AttributeCreatorGuard,
+          useValue: mockAttributeCreatorGuard,
         },
       ],
     }).compile();
@@ -37,66 +78,153 @@ describe('AttributesController', () => {
     jest.clearAllMocks();
   });
 
-  it('should create an attribute', async () => {
+  describe('create', () => {
     const createAttributeDto: CreateAttributeDto = {
       name: 'Color',
     };
 
-    const createdAttribute: AttributesDto = {
+    const createdAttribute: Attribute = {
       id: 1,
       name: 'Color',
       createdAt: new Date(),
       updatedAt: new Date(),
+      creator: user,
+      attributeHelicopters: [],
     };
 
-    jest.spyOn(service, 'create').mockReturnValue(of(createdAttribute));
+    it('should create an attribute', async () => {
+      jest
+        .spyOn(service, 'create')
+        .mockReturnValue(of(plainToInstance(AttributesDto, createdAttribute)));
 
-    const result = await controller.create(createAttributeDto).toPromise();
+      const result = await controller
+        .create({ user }, createAttributeDto)
+        .toPromise();
 
-    expect(service.create).toHaveBeenCalledWith(createAttributeDto);
-    expect(result).toBe(createdAttribute);
+      expect(result).toEqual(plainToInstance(AttributesDto, createdAttribute));
+    });
+
+    it('should throw UnauthorizedException if user is not authenticated', async () => {
+      try {
+        await controller.create({} as any, createAttributeDto);
+      } catch (error) {
+        expect(error).toBeInstanceOf(UnauthorizedException);
+      }
+    });
   });
 
-  it('should return all attributes', async () => {
+  describe('findAll', () => {
+    const user: UserDto = {
+      id: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      firstName: 'data',
+      lastName: 'data',
+      email: 'data@gmail.com',
+      password: '$3124R$fv.xfsf',
+      gender: Gender.FEMALE,
+      phoneNumber: '12345',
+      attributes: [],
+      helicopters: [],
+      attributeHelicopters: [],
+      engines: [],
+    };
+
     const attribute: AttributesDto = {
       id: 1,
       name: 'Color',
       createdAt: new Date(),
       updatedAt: new Date(),
+      creator: user,
     };
 
     const attributes: AttributesDto[] = [attribute];
 
-    jest.spyOn(service, 'findAll').mockReturnValue(of(attributes));
+    it('should return all attributes', async () => {
+      jest.spyOn(service, 'findAll').mockReturnValue(of(attributes));
 
-    const result = await controller.findAll().toPromise();
+      const result = await controller.findAll().toPromise();
 
-    expect(service.findAll).toHaveBeenCalled();
-    expect(result).toEqual(attributes);
+      expect(service.findAll).toHaveBeenCalled();
+      expect(result).toEqual(attributes);
+    });
+
+    it('should throw UnauthorizedException if user is not authenticated', async () => {
+      try {
+        await controller.findAll();
+      } catch (error) {
+        expect(error).toBeInstanceOf(UnauthorizedException);
+      }
+    });
   });
 
-  it('should return attribute by ID', async () => {
+  describe('findOne', () => {
     const attributeId: number = 1;
+
+    const user: UserDto = {
+      id: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      firstName: 'data',
+      lastName: 'data',
+      email: 'data@gmail.com',
+      password: '$3124R$fv.xfsf',
+      gender: Gender.FEMALE,
+      phoneNumber: '12345',
+      attributes: [],
+      helicopters: [],
+      attributeHelicopters: [],
+      engines: [],
+    };
 
     const attribute: AttributesDto = {
       id: attributeId,
       name: 'Color',
       createdAt: new Date(),
       updatedAt: new Date(),
+      creator: user,
     };
 
-    jest.spyOn(service, 'findOne').mockReturnValue(of(attribute));
+    it('should return attribute by ID', async () => {
+      jest.spyOn(service, 'findOne').mockReturnValue(of(attribute));
 
-    const result = await controller.findOne(attributeId.toString()).toPromise();
+      const result = await controller
+        .findOne(attributeId.toString())
+        .toPromise();
 
-    expect(service.findOne).toHaveBeenCalled();
-    expect(result).toEqual(attribute);
+      expect(service.findOne).toHaveBeenCalled();
+      expect(result).toEqual(attribute);
+    });
+
+    it('should throw UnauthorizedException if user is not authenticated', async () => {
+      try {
+        await controller.findOne(attributeId.toString());
+      } catch (error) {
+        expect(error).toBeInstanceOf(UnauthorizedException);
+      }
+    });
   });
 
-  it('should update attribute by ID', async () => {
+  describe('update', () => {
     const attributeId: number = 1;
     const updateAttributeDto: UpdateAttributeDto = {
       name: 'edit',
+    };
+
+    const user: UserDto = {
+      id: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      firstName: 'data',
+      lastName: 'data',
+      email: 'data@gmail.com',
+      password: '$3124R$fv.xfsf',
+      gender: Gender.FEMALE,
+      phoneNumber: '12345',
+      attributes: [],
+      helicopters: [],
+      attributeHelicopters: [],
+      engines: [],
     };
 
     const updatedAttribute: AttributesDto = {
@@ -104,27 +232,83 @@ describe('AttributesController', () => {
       name: updateAttributeDto.name,
       createdAt: new Date(),
       updatedAt: new Date(),
+      creator: user,
     };
 
-    jest.spyOn(service, 'update').mockReturnValue(of(updatedAttribute));
+    it('should update attribute by ID', async () => {
+      jest.spyOn(service, 'update').mockReturnValue(of(updatedAttribute));
 
-    const result = await controller
-      .update(attributeId.toString(), updateAttributeDto)
-      .toPromise();
+      const result = await controller
+        .update(attributeId.toString(), updateAttributeDto)
+        .toPromise();
 
-    expect(service.update).toHaveBeenCalledWith(
-      attributeId,
-      updateAttributeDto,
-    );
-    expect(result).toEqual(updatedAttribute);
+      expect(service.update).toHaveBeenCalledWith(
+        attributeId,
+        updateAttributeDto,
+      );
+      expect(result).toEqual(updatedAttribute);
+    });
+
+    it('should be protected by AttributeCreatorGuard', () => {
+      expect(
+        isGuarded(AttributesController.prototype.update, AttributeCreatorGuard),
+      ).toBe(true);
+    });
+
+    it('should throw UnauthorizedException if user is not authenticated', async () => {
+      try {
+        await controller.update(attributeId.toString(), updateAttributeDto);
+      } catch (error) {
+        expect(error).toBeInstanceOf(UnauthorizedException);
+      }
+    });
+
+    it('should throw ForbiddenException if user is not the creator', async () => {
+      try {
+        await controller.update(attributeId.toString(), updateAttributeDto);
+      } catch (error) {
+        expect(error).toBeInstanceOf(ForbiddenException);
+      }
+    });
   });
 
-  it('should remove attribute by ID', async () => {
+  describe('remove', () => {
     const attributeId: number = 1;
-    jest.spyOn(service, 'remove').mockReturnValue(of());
 
-    await controller.remove(attributeId.toString()).toPromise();
+    it('should remove attribute by ID', async () => {
+      jest.spyOn(service, 'remove').mockReturnValue(of());
 
-    expect(service.remove).toHaveBeenCalledWith(attributeId);
+      await controller.remove(attributeId.toString()).toPromise();
+
+      expect(service.remove).toHaveBeenCalledWith(attributeId);
+    });
+
+    it('should be protected by AttributeCreatorGuard', () => {
+      expect(
+        isGuarded(AttributesController.prototype.remove, AttributeCreatorGuard),
+      ).toBe(true);
+    });
+
+    it('should throw UnauthorizedException if user is not authenticated', async () => {
+      try {
+        await controller.remove(attributeId.toString());
+      } catch (error) {
+        expect(error).toBeInstanceOf(UnauthorizedException);
+      }
+    });
+
+    it('should throw ForbiddenException if user is not the creator', async () => {
+      try {
+        await controller.remove(attributeId.toString());
+      } catch (error) {
+        expect(error).toBeInstanceOf(ForbiddenException);
+      }
+    });
+  });
+
+  describe('JwtAuthGuard', () => {
+    it('should be protected by JwtAuthGuard', () => {
+      expect(isGuarded(AttributesController, JwtAuthGuard)).toBe(true);
+    });
   });
 });
