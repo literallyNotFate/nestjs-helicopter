@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Request } from 'express';
 import { User } from '../../module/user/entities/user.entity';
-import { of, switchMap } from 'rxjs';
+import { catchError, of, switchMap } from 'rxjs';
 import { EngineDto } from '../../module/engine/dto/engine.dto';
 import { EngineService } from '../../module/engine/engine.service';
 
@@ -19,8 +19,13 @@ export class EngineCreatorGuard implements CanActivate {
       .findOne(id)
       .pipe(
         switchMap((engine: EngineDto) => {
-          return engine ? of(engine.creator.id === creator.id) : of(false);
+          if (!engine) {
+            return of(false);
+          }
+
+          return of(engine.creator.id === creator.id);
         }),
+        catchError(() => of(false)),
       )
       .toPromise();
   }

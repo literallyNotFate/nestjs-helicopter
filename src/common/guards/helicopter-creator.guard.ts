@@ -3,7 +3,7 @@ import { Request } from 'express';
 import { User } from '../../module/user/entities/user.entity';
 import { HelicopterService } from '../../module/helicopter/helicopter.service';
 import { HelicopterDto } from '../../module/helicopter/dto/helicopter.dto';
-import { of, switchMap } from 'rxjs';
+import { catchError, of, switchMap } from 'rxjs';
 
 @Injectable()
 export class HelicopterCreatorGuard implements CanActivate {
@@ -19,10 +19,13 @@ export class HelicopterCreatorGuard implements CanActivate {
       .findOne(id)
       .pipe(
         switchMap((helicopter: HelicopterDto) => {
-          return helicopter
-            ? of(helicopter.creator.id === creator.id)
-            : of(false);
+          if (!helicopter) {
+            return of(false);
+          }
+
+          return of(helicopter.creator.id === creator.id);
         }),
+        catchError(() => of(false)),
       )
       .toPromise();
   }

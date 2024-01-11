@@ -160,7 +160,13 @@ export class HelicopterService {
         relations: ['creator'],
       }),
     ).pipe(
-      mergeMap((helicopter: Helicopter) => {
+      switchMap((helicopter: Helicopter) => {
+        if (!helicopter) {
+          throw new NotFoundException(
+            `Helicopter with ID:${id} was not found.`,
+          );
+        }
+
         return from(
           this.attributeHelicopterRepository.findOne({
             where: { id: helicopter.attributeHelicopterId },
@@ -198,12 +204,6 @@ export class HelicopterService {
       }),
     ).pipe(
       concatMap((found: Helicopter) => {
-        if (!found) {
-          throw new NotFoundException(
-            `Helicopter with ID:${id} was not found.`,
-          );
-        }
-
         return from(
           this.engineRepository.findOne({
             where: { id: updateHelicopterDto.engineId },
@@ -273,12 +273,6 @@ export class HelicopterService {
   remove(id: number): Observable<void> {
     return from(this.helicopterRepository.findOne({ where: { id } })).pipe(
       mergeMap((found: Helicopter) => {
-        if (!found) {
-          throw new NotFoundException(
-            `Helicopter with ID:${id} was not found.`,
-          );
-        }
-
         return from(this.helicopterRepository.remove(found)).pipe(
           catchError(() => {
             throw new InternalServerErrorException(

@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Request } from 'express';
 import { User } from '../../module/user/entities/user.entity';
-import { of, switchMap } from 'rxjs';
+import { catchError, of, switchMap } from 'rxjs';
 import { AttributesService } from '../../module/attributes/attributes.service';
 import { AttributesDto } from '../../module/attributes/dto/attributes.dto';
 
@@ -19,10 +19,13 @@ export class AttributeCreatorGuard implements CanActivate {
       .findOne(id)
       .pipe(
         switchMap((attribute: AttributesDto) => {
-          return attribute
-            ? of(attribute.creator.id === creator.id)
-            : of(false);
+          if (!attribute) {
+            return of(false);
+          }
+
+          return of(attribute.creator.id === creator.id);
         }),
+        catchError(() => of(false)),
       )
       .toPromise();
   }

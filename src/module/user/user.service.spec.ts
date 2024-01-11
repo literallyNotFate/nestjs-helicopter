@@ -9,7 +9,7 @@ import { AttributeHelicopter } from '../attribute-helicopter/entities/attribute-
 import { CreateUserDto } from './dto/create-user.dto';
 import { Gender } from '../../common/enums/gender.enum';
 import { UserDto } from './dto/user.dto';
-import { of, throwError } from 'rxjs';
+import { of } from 'rxjs';
 import * as bcrypt from 'bcrypt';
 import {
   BadRequestException,
@@ -21,6 +21,7 @@ import { HelicopterDto } from '../helicopter/dto/helicopter.dto';
 import { EngineDto } from '../engine/dto/engine.dto';
 import { AttributeHelicopterResponseDto } from '../attribute-helicopter/dto/attribute-helicopter-response.dto';
 import { AttributesDto } from '../attributes/dto/attributes.dto';
+import { UserRepository } from './user.repository';
 
 describe('UserService', () => {
   let service: UserService;
@@ -33,6 +34,7 @@ describe('UserService', () => {
     findOne: jest.fn(),
     remove: jest.fn(),
     merge: jest.fn(),
+    findOneBy: jest.fn(),
   };
 
   let helicopterRepository,
@@ -44,6 +46,7 @@ describe('UserService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserService,
+        UserRepository,
         {
           provide: REPOSITORY_TOKEN,
           useValue: mockUserRepository,
@@ -136,9 +139,26 @@ describe('UserService', () => {
       engines: [],
     };
 
+    const existing = {
+      id: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      firstName: 'Data',
+      lastName: 'Data',
+      email: createUserDto.email,
+      password: 'pass',
+      gender: Gender.FEMALE,
+      phoneNumber: '232144',
+      attributes: [],
+      helicopters: [],
+      attributeHelicopters: [],
+      engines: [],
+    };
+
     it('should create a new user', async () => {
       jest.spyOn(mockUserRepository, 'create').mockReturnValue(createdUser);
       jest.spyOn(mockUserRepository, 'save').mockReturnValue(of(createdUser));
+      jest.spyOn(mockUserRepository, 'findOneBy').mockReturnValue(of(null));
       jest.spyOn(bcrypt, 'hash').mockImplementation(() => hashed);
 
       const observableResult = service.create(createUserDto);
@@ -152,22 +172,15 @@ describe('UserService', () => {
     it('should throw BadRequestException if user already exists', async () => {
       jest.spyOn(bcrypt, 'hash').mockImplementation(() => hashed);
       jest.spyOn(mockUserRepository, 'create').mockReturnValue(createUserDto);
-      jest.spyOn(mockUserRepository, 'save').mockImplementation(() => {
-        return throwError({ code: '23505' });
-      });
+      jest
+        .spyOn(mockUserRepository, 'findOneBy')
+        .mockResolvedValue(of(existing));
 
-      await expect(service.create(createUserDto).toPromise()).rejects.toThrow(
-        BadRequestException,
-      );
-    });
-
-    it('should throw InternalServerErrorException if an error occurs', async () => {
-      mockUserRepository.save.mockResolvedValue(createdUser);
       try {
         await await service.create(createUserDto).toPromise();
       } catch (error) {
-        expect(error).toBeInstanceOf(InternalServerErrorException);
-        expect(error.message).toBe('Failed to create user.');
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect(error.message).toBe('This user already exists');
       }
     });
   });
@@ -200,6 +213,8 @@ describe('UserService', () => {
         relations: [
           'helicopters',
           'attributeHelicopters',
+          'attributeHelicopters.attributes',
+          'attributeHelicopters.helicopters',
           'attributes',
           'engines',
         ],
@@ -249,6 +264,8 @@ describe('UserService', () => {
         relations: [
           'helicopters',
           'attributeHelicopters',
+          'attributeHelicopters.attributes',
+          'attributeHelicopters.helicopters',
           'attributes',
           'engines',
         ],
@@ -269,6 +286,8 @@ describe('UserService', () => {
           relations: [
             'helicopters',
             'attributeHelicopters',
+            'attributeHelicopters.attributes',
+            'attributeHelicopters.helicopters',
             'attributes',
             'engines',
           ],
@@ -288,6 +307,8 @@ describe('UserService', () => {
         relations: [
           'helicopters',
           'attributeHelicopters',
+          'attributeHelicopters.attributes',
+          'attributeHelicopters.helicopters',
           'attributes',
           'engines',
         ],

@@ -161,12 +161,6 @@ export class AttributeHelicopterService {
           }),
         ).pipe(
           concatMap((attributeHelicopter: AttributeHelicopter) => {
-            if (!attributeHelicopter) {
-              throw new NotFoundException(
-                `AttributeHelicopter with ID:${id} was not found.`,
-              );
-            }
-
             attributeHelicopter.attributes = attributes;
             attributeHelicopter.values = updateAttributeHelicopterDto.values;
 
@@ -198,12 +192,6 @@ export class AttributeHelicopterService {
       }),
     ).pipe(
       concatMap((found: AttributeHelicopter) => {
-        if (!found) {
-          throw new NotFoundException(
-            `AttributeHelicopter with ID:${id} was not found.`,
-          );
-        }
-
         const attributeIds = found.attributes.map((attr) => attr.id);
         const helicopterIds = found.helicopters.map((heli) => heli.id);
 

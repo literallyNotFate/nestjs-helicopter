@@ -566,26 +566,6 @@ describe('HelicopterService', () => {
       );
     });
 
-    it('should throw NotFoundException if helicopter is not found by ID', async () => {
-      jest
-        .spyOn(mockHelicopterRepository, 'findOne')
-        .mockResolvedValue(undefined);
-
-      try {
-        await service.update(helicopterId, updateHelicopterDto).toPromise();
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotFoundException);
-        expect(error.message).toBe(
-          `Helicopter with ID:${helicopterId} was not found.`,
-        );
-      }
-
-      expect(mockHelicopterRepository.findOne).toHaveBeenCalledWith({
-        where: { id: helicopterId },
-        relations: ['engine', 'attributeHelicopter'],
-      });
-    });
-
     it('should throw NotFoundException if engine is not found by ID', async () => {
       jest
         .spyOn(mockHelicopterRepository, 'findOne')
@@ -734,18 +714,6 @@ describe('HelicopterService', () => {
       expect(mockHelicopterRepository.remove).toHaveBeenCalledWith(
         foundHelicopter,
       );
-    });
-
-    it('should throw NotFoundException if helicopter is not found by ID', async () => {
-      mockHelicopterRepository.findOne.mockResolvedValue(null);
-
-      await expect(service.remove(helicopterId).toPromise()).rejects.toThrow(
-        NotFoundException,
-      );
-
-      expect(mockHelicopterRepository.findOne).toHaveBeenCalledWith({
-        where: { id: helicopterId },
-      });
     });
 
     it('should throw InternalServerErrorException if an error occurs', async () => {

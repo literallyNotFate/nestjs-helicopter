@@ -101,10 +101,6 @@ export class AttributesService {
     ).pipe(
       take(1),
       mergeMap((found: Attribute) => {
-        if (!found) {
-          throw new NotFoundException(`Attribute with ID:${id} was not found.`);
-        }
-
         const updated = this.attributeRepository.merge(
           found,
           updateAttributeDto,
@@ -126,10 +122,6 @@ export class AttributesService {
     return from(this.attributeRepository.findOne({ where: { id } })).pipe(
       take(1),
       mergeMap((found: Attribute) => {
-        if (!found) {
-          throw new NotFoundException(`Attribute with ID: ${id} not found`);
-        }
-
         return from(this.attributeRepository.remove(found)).pipe(
           catchError(() => {
             throw new InternalServerErrorException(

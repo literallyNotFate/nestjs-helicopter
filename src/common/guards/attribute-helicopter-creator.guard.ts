@@ -2,7 +2,7 @@ import { AttributeHelicopterResponseDto } from '../../module/attribute-helicopte
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Request } from 'express';
 import { User } from '../../module/user/entities/user.entity';
-import { of, switchMap } from 'rxjs';
+import { catchError, of, switchMap } from 'rxjs';
 import { AttributeHelicopterService } from '../../module/attribute-helicopter/attribute-helicopter.service';
 
 @Injectable()
@@ -21,8 +21,13 @@ export class AttributeHelicopterCreatorGuard implements CanActivate {
       .findOne(id)
       .pipe(
         switchMap((ah: AttributeHelicopterResponseDto) => {
-          return ah ? of(ah.creator.id === creator.id) : of(false);
+          if (!ah) {
+            return of(false);
+          }
+
+          return of(ah.creator.id === creator.id);
         }),
+        catchError(() => of(false)),
       )
       .toPromise();
   }

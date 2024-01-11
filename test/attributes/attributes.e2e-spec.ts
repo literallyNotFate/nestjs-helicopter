@@ -4,9 +4,26 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import { AppModule } from '../../src/app.module';
 import { AttributesService } from '../../src/module/attributes/attributes.service';
 import { throwError } from 'rxjs';
+import { RegisterDto } from '../../src/core/auth/dto/register.dto';
 
 describe('Attributes (e2e)', () => {
   let app: INestApplication;
+
+  const userCreatorData: RegisterDto = {
+    firstName: 'James',
+    lastName: 'Creator',
+    email: 'attributecreator@gmail.com',
+    password: 'abc123',
+    phoneNumber: '+37368345678',
+  };
+
+  const userOtherData: RegisterDto = {
+    firstName: 'James',
+    lastName: 'Other',
+    email: 'attributeother@gmail.com',
+    password: 'abc123',
+    phoneNumber: '+37368345678',
+  };
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -22,13 +39,25 @@ describe('Attributes (e2e)', () => {
   });
 
   describe('Endpoints', () => {
-    let attribute;
+    let attribute, creator, other;
 
     describe('POST /attibutes', () => {
+      const name: string = 'Test attribute';
+
       it(`should create an attribute (${HttpStatus.CREATED})`, async () => {
-        const name: string = 'Test attribute';
+        const user = await request(app.getHttpServer())
+          .post('/auth/register')
+          .send(userCreatorData);
+
+        const user2 = await request(app.getHttpServer())
+          .post('/auth/register')
+          .send(userOtherData);
+
+        const token = user.body.accessToken;
+
         const response = await request(app.getHttpServer())
           .post('/attributes')
+          .set('Authorization', `Bearer ${token}`)
           .send({ name });
 
         expect(response.statusCode).toBe(HttpStatus.CREATED);
@@ -36,21 +65,32 @@ describe('Attributes (e2e)', () => {
         expect(response.body.name).toBe(name);
 
         attribute = response.body;
+        creator = token;
+        other = user2.body.accessToken;
+      });
+
+      it(`should throw UnathorizedException if user is not logged in while creating an attribute (${HttpStatus.UNAUTHORIZED})`, async () => {
+        const response = await request(app.getHttpServer())
+          .post('/attributes')
+          .send({ name });
+
+        expect(response.statusCode).toBe(HttpStatus.UNAUTHORIZED);
       });
 
       it(`should throw BadRequest if name is not a string (${HttpStatus.BAD_REQUEST})`, async () => {
         const name: number = 1;
         const response = await request(app.getHttpServer())
           .post('/attributes')
+          .set('Authorization', `Bearer ${creator}`)
           .send({ name });
 
         expect(response.statusCode).toBe(HttpStatus.BAD_REQUEST);
       });
-
       it(`should throw BadRequest if name is empty (${HttpStatus.BAD_REQUEST})`, async () => {
         const name: string = '';
         const response = await request(app.getHttpServer())
           .post('/attributes')
+          .set('Authorization', `Bearer ${creator}`)
           .send({ name });
 
         expect(response.statusCode).toBe(HttpStatus.BAD_REQUEST);
@@ -60,45 +100,62 @@ describe('Attributes (e2e)', () => {
         const name: string = 'Test Error';
         const service = app.get<AttributesService>(AttributesService);
         jest.spyOn(service, 'create').mockReturnValue(throwError(new Error()));
-
         const response = await request(app.getHttpServer())
           .post('/attributes')
+          .set('Authorization', `Bearer ${creator}`)
           .send({ name });
+
         expect(response.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       });
     });
 
     describe('GET /attributes', () => {
       it(`should get all attributes (${HttpStatus.OK})`, async () => {
-        const response = await request(app.getHttpServer()).get('/attributes');
+        const response = await request(app.getHttpServer())
+          .get('/attributes')
+          .set('Authorization', `Bearer ${creator}`);
+
         expect(response.status).toBe(HttpStatus.OK);
         expect(response.body).toBeDefined();
+      });
+
+      it(`should throw UnathorizedException if user is not logged in while getting all attributes (${HttpStatus.UNAUTHORIZED})`, async () => {
+        const response = await request(app.getHttpServer()).get('/attributes');
+        expect(response.statusCode).toBe(HttpStatus.UNAUTHORIZED);
       });
 
       it(`should throw InternalServerErrorException (${HttpStatus.INTERNAL_SERVER_ERROR})`, async () => {
         const service = app.get<AttributesService>(AttributesService);
         jest.spyOn(service, 'findAll').mockReturnValue(throwError(new Error()));
 
-        const response = await request(app.getHttpServer()).get('/attributes');
+        const response = await request(app.getHttpServer())
+          .get('/attributes')
+          .set('Authorization', `Bearer ${creator}`);
         expect(response.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       });
     });
 
     describe('GET /attributes/:id', () => {
       it(`should get attribute by ID (${HttpStatus.OK})`, async () => {
-        const response = await request(app.getHttpServer()).get(
-          `/attributes/${attribute.id}`,
-        );
+        const response = await request(app.getHttpServer())
+          .get(`/attributes/${attribute.id}`)
+          .set('Authorization', `Bearer ${creator}`);
+
         expect(response.status).toBe(HttpStatus.OK);
         expect(response.body).toBeDefined();
         expect(response.body.id).toBe(attribute.id);
       });
 
+      it(`should throw UnathorizedException if user is not logged in while getting attribute by ID (${HttpStatus.UNAUTHORIZED})`, async () => {
+        const response = await request(app.getHttpServer()).get('/attributes');
+        expect(response.statusCode).toBe(HttpStatus.UNAUTHORIZED);
+      });
+
       it(`should throw exception if attribute was not found (${HttpStatus.INTERNAL_SERVER_ERROR})`, async () => {
         const wrongId: number = 999;
-        const response = await request(app.getHttpServer()).get(
-          `/attributes/${wrongId}`,
-        );
+        const response = await request(app.getHttpServer())
+          .get(`/attributes/${wrongId}`)
+          .set('Authorization', `Bearer ${creator}`);
 
         expect(response.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       });
@@ -106,31 +163,51 @@ describe('Attributes (e2e)', () => {
       it(`should throw InternalServerException (${HttpStatus.INTERNAL_SERVER_ERROR})`, async () => {
         const service = app.get<AttributesService>(AttributesService);
         jest.spyOn(service, 'findOne').mockReturnValue(throwError(new Error()));
-        const response = await request(app.getHttpServer()).get(
-          `/attributes/${attribute.id}`,
-        );
+        const response = await request(app.getHttpServer())
+          .get(`/attributes/${attribute.id}`)
+          .set('Authorization', `Bearer ${creator}`);
 
         expect(response.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       });
     });
 
     describe('PATCH /attributes/:id', () => {
+      const name: string = 'Attribute Edit';
+
       it(`should update an attribute (${HttpStatus.OK})`, async () => {
-        const edit: string = 'Attribute Edit';
         const response = await request(app.getHttpServer())
           .patch(`/attributes/${attribute.id}`)
-          .send({ name: edit });
+          .send({ name })
+          .set('Authorization', `Bearer ${creator}`);
 
         expect(response.status).toBe(HttpStatus.OK);
         expect(response.body).toBeDefined();
-        expect(response.body.name).toBe(edit);
+        expect(response.body.name).toBe(name);
+      });
+
+      it(`should throw UnathorizedException if user is not logged in while updating an attribute by ID (${HttpStatus.UNAUTHORIZED})`, async () => {
+        const response = await request(app.getHttpServer())
+          .patch(`/attributes/${attribute.id}`)
+          .send({ name });
+
+        expect(response.statusCode).toBe(HttpStatus.UNAUTHORIZED);
+      });
+
+      it(`should throw ForbiddenException if user is not the creator of the resource (${HttpStatus.FORBIDDEN})`, async () => {
+        const response = await request(app.getHttpServer())
+          .patch(`/attributes/${attribute.id}`)
+          .send({ name })
+          .set('Authorization', `Bearer ${other}`);
+
+        expect(response.statusCode).toBe(HttpStatus.FORBIDDEN);
       });
 
       it(`should throw BadRequest if name is not a string (${HttpStatus.BAD_REQUEST})`, async () => {
         const edit: number = 1;
         const response = await request(app.getHttpServer())
           .patch(`/attributes/${attribute.id}`)
-          .send({ name: edit });
+          .send({ name: edit })
+          .set('Authorization', `Bearer ${creator}`);
 
         expect(response.statusCode).toBe(HttpStatus.BAD_REQUEST);
       });
@@ -139,30 +216,20 @@ describe('Attributes (e2e)', () => {
         const edit: string = '';
         const response = await request(app.getHttpServer())
           .patch(`/attributes/${attribute.id}`)
-          .send({ name: edit });
+          .send({ name: edit })
+          .set('Authorization', `Bearer ${creator}`);
 
         expect(response.statusCode).toBe(HttpStatus.BAD_REQUEST);
       });
 
-      it(`should throw exception if attribute was not found (${HttpStatus.NOT_FOUND})`, async () => {
-        const edit: string = 'Attribute Edit';
-        const wrongId: number = 999;
-
-        const response = await request(app.getHttpServer())
-          .patch(`/attributes/${wrongId}`)
-          .send({ name: edit });
-
-        expect(response.status).toBe(HttpStatus.NOT_FOUND);
-      });
-
       it(`should throw InternalServerException (${HttpStatus.INTERNAL_SERVER_ERROR})`, async () => {
         const service = app.get<AttributesService>(AttributesService);
-        const edit: string = 'Attribute Edit';
 
         jest.spyOn(service, 'update').mockReturnValue(throwError(new Error()));
         const response = await request(app.getHttpServer())
           .get(`/attributes/${attribute.id}`)
-          .send({ name: edit });
+          .send({ name })
+          .set('Authorization', `Bearer ${creator}`);
 
         expect(response.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       });
@@ -170,27 +237,36 @@ describe('Attributes (e2e)', () => {
 
     describe('DELETE /attributes:id', () => {
       it(`should delete an attribute (${HttpStatus.OK})`, async () => {
-        const response = await request(app.getHttpServer()).delete(
-          `/attributes/${attribute.id}`,
-        );
+        const response = await request(app.getHttpServer())
+          .delete(`/attributes/${attribute.id}`)
+          .set('Authorization', `Bearer ${creator}`);
+
         expect(response.status).toBe(HttpStatus.OK);
       });
 
-      it(`should throw exception if attribute was not found (${HttpStatus.NOT_FOUND})`, async () => {
-        const wrongId: number = 999;
+      it(`should throw UnathorizedException if user is not logged in while deleting an attribute by ID (${HttpStatus.UNAUTHORIZED})`, async () => {
         const response = await request(app.getHttpServer()).delete(
-          `/attributes/${wrongId}`,
+          `/attributes/${attribute.id}`,
         );
-        expect(response.status).toBe(HttpStatus.NOT_FOUND);
+
+        expect(response.statusCode).toBe(HttpStatus.UNAUTHORIZED);
+      });
+
+      it(`should throw ForbiddenException if user is not the creator of the resource (${HttpStatus.FORBIDDEN})`, async () => {
+        const response = await request(app.getHttpServer())
+          .delete(`/attributes/${attribute.id}`)
+          .set('Authorization', `Bearer ${other}`);
+
+        expect(response.statusCode).toBe(HttpStatus.FORBIDDEN);
       });
 
       it(`should throw InternalServerException (${HttpStatus.INTERNAL_SERVER_ERROR})`, async () => {
         const service = app.get<AttributesService>(AttributesService);
 
         jest.spyOn(service, 'remove').mockReturnValue(throwError(new Error()));
-        const response = await request(app.getHttpServer()).delete(
-          `/attributes/${attribute.id}`,
-        );
+        const response = await request(app.getHttpServer())
+          .delete(`/attributes/${attribute.id}`)
+          .set('Authorization', `Bearer ${creator}`);
 
         expect(response.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       });

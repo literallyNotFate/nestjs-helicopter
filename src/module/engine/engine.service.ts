@@ -99,10 +99,6 @@ export class EngineService {
     ).pipe(
       take(1),
       mergeMap((found: Engine) => {
-        if (!found) {
-          throw new NotFoundException(`Engine with ID:${id} was not found.`);
-        }
-
         const updated = this.engineRepository.merge(found, updateEngineDto);
 
         return from(this.engineRepository.save(updated)).pipe(
@@ -123,10 +119,6 @@ export class EngineService {
       }),
     ).pipe(
       concatMap((found: Engine) => {
-        if (!found) {
-          throw new NotFoundException(`Engine with ID:${id} was not found.`);
-        }
-
         return from(this.helicopterRepository.remove(found.helicopters)).pipe(
           concatMap(() => this.engineRepository.remove(found)),
           catchError(() => {

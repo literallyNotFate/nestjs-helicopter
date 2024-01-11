@@ -554,39 +554,6 @@ describe('AttributeHelicopterService', () => {
         },
       });
     });
-
-    it('should throw NotFoundException if attribute helicopter is not found by ID', async () => {
-      jest.spyOn(attributeRepository, 'find').mockResolvedValue(of(attributes));
-      jest
-        .spyOn(mockAttributeHelicopterRepository, 'findOne')
-        .mockResolvedValue(of(null));
-
-      try {
-        await service.update(
-          attributeHelicopterId,
-          updateHelicopterAttriuteDto,
-        );
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotFoundException);
-        expect(error.message).toBe(
-          `AttributeHelicopter with ID:${attributeHelicopterId} was not found.`,
-        );
-
-        expect(attributeRepository.find).toHaveBeenCalledWith({
-          where: {
-            id: expect.objectContaining({
-              _type: 'in',
-              _value: updateHelicopterAttriuteDto.attributeIds,
-            }),
-          },
-        });
-
-        expect(mockAttributeHelicopterRepository.findOne).toHaveBeenCalledWith({
-          where: { id: attributeHelicopterId },
-          relations: ['attributes', 'helicopters', 'creator'],
-        });
-      }
-    });
   });
 
   describe('remove', () => {
@@ -615,19 +582,6 @@ describe('AttributeHelicopterService', () => {
       mockAttributeHelicopterRepository.remove.mockResolvedValue({});
 
       await service.remove(attributeHelicopterId);
-
-      expect(mockAttributeHelicopterRepository.findOne).toHaveBeenCalledWith({
-        where: { id: attributeHelicopterId },
-        relations: ['attributes', 'helicopters'],
-      });
-    });
-
-    it('should throw NotFoundException if attribute helicopter not found by ID', async () => {
-      mockAttributeHelicopterRepository.findOne.mockResolvedValue(null);
-
-      await expect(
-        service.remove(attributeHelicopterId).toPromise(),
-      ).rejects.toThrow(NotFoundException);
 
       expect(mockAttributeHelicopterRepository.findOne).toHaveBeenCalledWith({
         where: { id: attributeHelicopterId },

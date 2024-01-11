@@ -12,11 +12,11 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
 
-  test_db:
+  test_2:
     image: postgres
     environment:
-      POSTGRES_DB: test_helicopters
-      POSTGRES_USER: test_user
-      POSTGRES_PASSWORD: test_pass
+      POSTGRES_DB: test_helicopters_2
+      POSTGRES_USER: test_user_2
+      POSTGRES_PASSWORD: test_pass_2
     ports:
-      - '5433:5432'
+      - '5434:5432'

@@ -15,6 +15,7 @@ import {
   map,
   mergeMap,
   of,
+  switchMap,
   take,
 } from 'rxjs';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -30,6 +31,7 @@ import { Helicopter } from '../helicopter/entities/helicopter.entity';
 import { Engine } from '../engine/entities/engine.entity';
 import { AttributeHelicopter } from '../attribute-helicopter/entities/attribute-helicopter.entity';
 import { Attribute } from '../attributes/entities/attribute.entity';
+import { UserRepository } from './user.repository';
 
 @Injectable()
 export class UserService {
@@ -44,22 +46,27 @@ export class UserService {
     private readonly attributeHelicopterRepository: Repository<AttributeHelicopter>,
     @InjectRepository(Attribute)
     private readonly attributeRepository: Repository<Attribute>,
+    private readonly usersRepository: UserRepository,
   ) {}
 
   create(createUserDto: CreateUserDto): Observable<UserDto> {
     return from(bcrypt.hash(createUserDto.password, 10)).pipe(
-      mergeMap((hashed) => {
-        createUserDto.password = hashed;
-        const user = this.userRepository.create(createUserDto);
-
-        return from(this.userRepository.save(user)).pipe(
-          map((result) => this.mapToUserDto(result)),
-          catchError((error) => {
-            if (error?.code === '23505') {
+      mergeMap((hashed: string) => {
+        return this.usersRepository.getByEmail(createUserDto.email).pipe(
+          switchMap((existing: User) => {
+            if (existing) {
               throw new BadRequestException('This user already exists');
             }
 
-            throw new InternalServerErrorException('Failed to create user');
+            createUserDto.password = hashed;
+            const user = this.userRepository.create(createUserDto);
+
+            return from(this.userRepository.save(user)).pipe(
+              map((result) => this.mapToUserDto(result)),
+              catchError(() => {
+                throw new InternalServerErrorException('Failed to create user');
+              }),
+            );
           }),
         );
       }),
@@ -72,6 +79,8 @@ export class UserService {
         relations: [
           'helicopters',
           'attributeHelicopters',
+          'attributeHelicopters.attributes',
+          'attributeHelicopters.helicopters',
           'attributes',
           'engines',
         ],
@@ -91,6 +100,8 @@ export class UserService {
         relations: [
           'helicopters',
           'attributeHelicopters',
+          'attributeHelicopters.attributes',
+          'attributeHelicopters.helicopters',
           'attributes',
           'engines',
         ],
@@ -187,21 +198,37 @@ export class UserService {
   private mapToUserDto(user: User): UserDto {
     const userDto = plainToInstance(UserDto, user);
 
-    userDto.helicopters = user.helicopters.map((helicopter) =>
-      plainToInstance(HelicopterDto, helicopter),
-    );
+    if (user.helicopters && Array.isArray(user.helicopters)) {
+      userDto.helicopters = user.helicopters.map((helicopter) =>
+        plainToInstance(HelicopterDto, helicopter),
+      );
+    } else {
+      userDto.helicopters = [];
+    }
 
-    userDto.engines = user.engines.map((engine) =>
-      plainToInstance(EngineDto, engine),
-    );
+    if (user.engines && Array.isArray(user.engines)) {
+      userDto.engines = user.engines.map((engine) =>
+        plainToInstance(EngineDto, engine),
+      );
+    } else {
+      userDto.engines = [];
+    }
 
-    userDto.attributes = user.attributes.map((attribute) =>
-      plainToInstance(AttributesDto, attribute),
-    );
+    if (user.attributes && Array.isArray(user.attributes)) {
+      userDto.attributes = user.attributes.map((attribute) =>
+        plainToInstance(AttributesDto, attribute),
+      );
+    } else {
+      userDto.attributes = [];
+    }
 
-    userDto.attributeHelicopters = user.attributeHelicopters.map((ah) =>
-      AttributeHelicopterResponseDto.ToResponse(ah),
-    );
+    if (user.attributeHelicopters && Array.isArray(user.attributeHelicopters)) {
+      userDto.attributeHelicopters = user.attributeHelicopters.map((ah) =>
+        AttributeHelicopterResponseDto.ToResponse(ah),
+      );
+    } else {
+      userDto.helicopters = [];
+    }
 
     return userDto;
   }

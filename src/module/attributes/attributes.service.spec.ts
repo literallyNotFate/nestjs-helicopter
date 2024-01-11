@@ -279,24 +279,6 @@ describe('AttributesService', () => {
       expect(result).toEqual(plainToInstance(AttributesDto, updated));
     });
 
-    it('should throw NotFoundException if attribute is not found by ID', async () => {
-      jest
-        .spyOn(mockAttributeRepository, 'findOne')
-        .mockResolvedValue(undefined);
-
-      await expect(
-        service.update(attributeId, updateAttributeDto).toPromise(),
-      ).rejects.toThrow(NotFoundException);
-
-      expect(mockAttributeRepository.findOne).toHaveBeenCalledWith({
-        where: { id: attributeId },
-        relations: ['creator'],
-      });
-
-      expect(mockAttributeRepository.merge).not.toHaveBeenCalled();
-      expect(mockAttributeRepository.save).not.toHaveBeenCalled();
-    });
-
     it('should throw InternalServerErrorException if an error occurs', async () => {
       jest.spyOn(mockAttributeRepository, 'findOne').mockResolvedValue(found);
 
@@ -331,23 +313,6 @@ describe('AttributesService', () => {
         where: { id: attributeId },
       });
       expect(mockAttributeRepository.remove).toHaveBeenCalledWith(found);
-    });
-
-    it('should throw NotFoundException if attribute is not found by ID', async () => {
-      jest.spyOn(mockAttributeRepository, 'findOne').mockReturnValue(of(null));
-
-      try {
-        await service.findOne(attributeId);
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotFoundException);
-        expect(error.message).toBe(
-          `Attribute with ID:${attributeId} was not found.`,
-        );
-        expect(mockAttributeRepository.findOne).toHaveBeenCalledWith({
-          where: { id: attributeId },
-        });
-        expect(mockAttributeRepository.remove).not.toHaveBeenCalled();
-      }
     });
 
     it('should throw InternalServerErrorException if an error occurs', async () => {

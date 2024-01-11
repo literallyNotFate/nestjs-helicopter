@@ -300,18 +300,6 @@ describe('EngineService', () => {
       expect(result).toEqual(plainToInstance(EngineDto, updated));
     });
 
-    it('should throw NotFoundException if engine is not found by ID', async () => {
-      jest.spyOn(mockEngineRepository, 'findOne').mockResolvedValue(undefined);
-
-      await expect(
-        service.update(engineId, updateEngineDto).toPromise(),
-      ).rejects.toThrow(NotFoundException);
-      expect(mockEngineRepository.findOne).toHaveBeenCalledWith({
-        where: { id: engineId },
-        relations: ['creator'],
-      });
-    });
-
     it('should throw InternalServerException if an error occurs', async () => {
       jest.spyOn(mockEngineRepository, 'findOne').mockResolvedValue(found);
 
@@ -355,19 +343,6 @@ describe('EngineService', () => {
         found.helicopters,
       );
       expect(mockEngineRepository.remove).toHaveBeenCalledWith(found);
-    });
-
-    it('should throw NotFoundException if engine is not found by ID', async () => {
-      mockEngineRepository.findOne.mockResolvedValue(null);
-
-      await expect(service.remove(engineId).toPromise()).rejects.toThrow(
-        NotFoundException,
-      );
-
-      expect(mockEngineRepository.findOne).toHaveBeenCalledWith({
-        where: { id: engineId },
-        relations: ['helicopters'],
-      });
     });
 
     it('should throw InternalServerErrorException if an error occurs', async () => {
