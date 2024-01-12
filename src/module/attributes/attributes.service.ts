@@ -6,8 +6,7 @@ import {
   NotFoundException,
   Req,
 } from '@nestjs/common';
-import { CreateAttributeDto } from './dto/create-attribute.dto';
-import { UpdateAttributeDto } from './dto/update-attribute.dto';
+import { AttributesDto, CreateAttributeDto, UpdateAttributeDto } from './dto';
 import { Attribute } from './entities/attribute.entity';
 import { Repository } from 'typeorm';
 import {
@@ -20,7 +19,6 @@ import {
   of,
   take,
 } from 'rxjs';
-import { AttributesDto } from './dto/attributes.dto';
 import { AuthService } from '../../core/auth/auth.service';
 import { User } from '../user/entities/user.entity';
 

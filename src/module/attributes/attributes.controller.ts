@@ -16,12 +16,10 @@ import {
   UseGuards,
   Req,
 } from '@nestjs/common';
+import { AttributesDto, CreateAttributeDto, UpdateAttributeDto } from './dto';
 import { AttributesService } from './attributes.service';
-import { CreateAttributeDto } from './dto/create-attribute.dto';
-import { UpdateAttributeDto } from './dto/update-attribute.dto';
-import { AttributesDto } from './dto/attributes.dto';
 import { Observable, from } from 'rxjs';
-import { AttributeCreatorGuard } from '../../common/guards/attribute-creator.guard';
+import { AttributeCreatorGuard } from '../../common/guards/index';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 
 @ApiTags('Attributes')

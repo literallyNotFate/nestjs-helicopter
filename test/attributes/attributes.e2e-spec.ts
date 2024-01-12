@@ -4,7 +4,7 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import { AppModule } from '../../src/app.module';
 import { AttributesService } from '../../src/module/attributes/attributes.service';
 import { throwError } from 'rxjs';
-import { RegisterDto } from '../../src/core/auth/dto/register.dto';
+import { RegisterDto } from '../../src/core/auth/dto';
 
 describe('Attributes (e2e)', () => {
   let app: INestApplication;

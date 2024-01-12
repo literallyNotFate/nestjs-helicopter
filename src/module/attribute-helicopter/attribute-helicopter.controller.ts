@@ -16,13 +16,15 @@ import {
   UseGuards,
   Req,
 } from '@nestjs/common';
+import {
+  UpdateAttributeHelicopterDto,
+  CreateAttributeHelicopterDto,
+  AttributeHelicopterResponseDto,
+} from './dto';
 import { AttributeHelicopterService } from './attribute-helicopter.service';
-import { CreateAttributeHelicopterDto } from './dto/create-attribute-helicopter.dto';
-import { UpdateAttributeHelicopterDto } from './dto/update-attribute-helicopter.dto';
 import { Observable, from } from 'rxjs';
-import { AttributeHelicopterResponseDto } from './dto/attribute-helicopter-response.dto';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
-import { AttributeHelicopterCreatorGuard } from '../../common/guards/attribute-helicopter-creator.guard';
+import { AttributeHelicopterCreatorGuard } from '../../common/guards';
 
 @ApiTags('Attribute Helicopter')
 @ApiBearerAuth()

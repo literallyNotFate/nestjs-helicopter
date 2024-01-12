@@ -4,7 +4,7 @@ import { AppModule } from '../../src/app.module';
 import { Test } from '@nestjs/testing';
 import { EngineService } from '../../src/module/engine/engine.service';
 import { throwError } from 'rxjs';
-import { RegisterDto } from '../../src/core/auth/dto/register.dto';
+import { RegisterDto } from '../../src/core/auth/dto';
 
 describe('Engine (e2e)', () => {
   let app: INestApplication;

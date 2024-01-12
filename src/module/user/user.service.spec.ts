@@ -6,9 +6,7 @@ import { Helicopter } from '../helicopter/entities/helicopter.entity';
 import { Engine } from '../engine/entities/engine.entity';
 import { Attribute } from '../attributes/entities/attribute.entity';
 import { AttributeHelicopter } from '../attribute-helicopter/entities/attribute-helicopter.entity';
-import { CreateUserDto } from './dto/create-user.dto';
 import { Gender } from '../../common/enums/gender.enum';
-import { UserDto } from './dto/user.dto';
 import { of } from 'rxjs';
 import * as bcrypt from 'bcrypt';
 import {
@@ -16,11 +14,11 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { HelicopterDto } from '../helicopter/dto/helicopter.dto';
-import { EngineDto } from '../engine/dto/engine.dto';
+import { UserDto, CreateUserDto, UpdateUserDto } from './dto';
+import { HelicopterDto } from '../helicopter/dto';
+import { EngineDto } from '../engine/dto';
 import { AttributeHelicopterResponseDto } from '../attribute-helicopter/dto/attribute-helicopter-response.dto';
-import { AttributesDto } from '../attributes/dto/attributes.dto';
+import { AttributesDto } from '../attributes/dto';
 import { UserRepository } from './user.repository';
 
 describe('UserService', () => {

@@ -1,20 +1,22 @@
-import { UserDto } from '../../module/user/dto/user.dto';
+import { UserDto } from '../../module/user/dto';
 import { plainToInstance } from 'class-transformer';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AttributeHelicopterService } from './attribute-helicopter.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import {
+  UpdateAttributeHelicopterDto,
+  CreateAttributeHelicopterDto,
+  AttributeHelicopterResponseDto,
+} from './dto';
 import { AttributeHelicopter } from './entities/attribute-helicopter.entity';
 import { Attribute } from '../attributes/entities/attribute.entity';
 import { Helicopter } from '../helicopter/entities/helicopter.entity';
-import { CreateAttributeHelicopterDto } from './dto/create-attribute-helicopter.dto';
 import { of, throwError } from 'rxjs';
-import { AttributeHelicopterResponseDto } from './dto/attribute-helicopter-response.dto';
 import {
   BadRequestException,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { UpdateAttributeHelicopterDto } from './dto/update-attribute-helicopter.dto';
 import { User } from '../user/entities/user.entity';
 import { Gender } from '../../common/enums/gender.enum';
 import { AuthService } from '../../core/auth/auth.service';

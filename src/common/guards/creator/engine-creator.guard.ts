@@ -1,13 +1,13 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Request } from 'express';
-import { User } from '../../module/user/entities/user.entity';
+import { User } from '../../../module/user/entities/user.entity';
 import { catchError, of, switchMap } from 'rxjs';
-import { AttributesService } from '../../module/attributes/attributes.service';
-import { AttributesDto } from '../../module/attributes/dto/attributes.dto';
+import { EngineDto } from '../../../module/engine/dto/engine.dto';
+import { EngineService } from '../../../module/engine/engine.service';
 
 @Injectable()
-export class AttributeCreatorGuard implements CanActivate {
-  constructor(private readonly attributeService: AttributesService) {}
+export class EngineCreatorGuard implements CanActivate {
+  constructor(private readonly engineService: EngineService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
@@ -15,15 +15,15 @@ export class AttributeCreatorGuard implements CanActivate {
     const creator: User = request.user as User;
     const id: number = +request.params.id;
 
-    return this.attributeService
+    return this.engineService
       .findOne(id)
       .pipe(
-        switchMap((attribute: AttributesDto) => {
-          if (!attribute) {
+        switchMap((engine: EngineDto) => {
+          if (!engine) {
             return of(false);
           }
 
-          return of(attribute.creator.id === creator.id);
+          return of(engine.creator.id === creator.id);
         }),
         catchError(() => of(false)),
       )

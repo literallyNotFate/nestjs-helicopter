@@ -5,14 +5,11 @@ import {
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { RegisterDto, TokensDto } from './dto';
 import { JwtService } from '@nestjs/jwt';
-import { RegisterDto } from './dto/register.dto';
-
 import * as bcrypt from 'bcrypt';
 import { Observable, catchError, concatMap, from, map, switchMap } from 'rxjs';
-import { JWT_EXPIRATION, JWT_SECRET } from './constants';
-import { User } from 'src/module/user/entities/user.entity';
-import { TokensDto } from './dto/tokens.dto';
+import { User } from '../../module/user/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -58,8 +55,8 @@ export class AuthService {
 
     return from(
       this.jwtService.signAsync(payload, {
-        secret: JWT_SECRET,
-        expiresIn: JWT_EXPIRATION,
+        secret: process.env.JWT_ACCESS_TOKEN_SECRET,
+        expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRATION_TIME,
       }),
     ).pipe(
       map((accessToken: string) => {

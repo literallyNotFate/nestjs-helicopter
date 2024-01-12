@@ -1,22 +1,22 @@
-import { UserDto } from '../../module/user/dto/user.dto';
+import { AttributeHelicopter } from './../attribute-helicopter/entities/attribute-helicopter.entity';
+import { UserDto } from '../../module/user/dto';
 import { plainToInstance } from 'class-transformer';
 import { Test, TestingModule } from '@nestjs/testing';
 import { HelicopterService } from './helicopter.service';
 import { Helicopter } from './entities/helicopter.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Engine } from '../engine/entities/engine.entity';
-import { AttributeHelicopter } from '../attribute-helicopter/entities/attribute-helicopter.entity';
-import { CreateHelicopterDto } from './dto/create-helicopter.dto';
-import { HelicopterDto } from './dto/helicopter.dto';
-import { AttributeHelicopterDto } from '../attribute-helicopter/dto/attribute-helicopter.dto';
 import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { of } from 'rxjs';
-import { UpdateHelicopterDto } from './dto/update-helicopter.dto';
-import { EngineDto } from '../engine/dto/engine.dto';
-import { AttributeHelicopterResponseDto } from '../attribute-helicopter/dto/attribute-helicopter-response.dto';
+import { HelicopterDto, UpdateHelicopterDto, CreateHelicopterDto } from './dto';
+import { EngineDto } from '../engine/dto';
+import {
+  AttributeHelicopterResponseDto,
+  AttributeHelicopterDto,
+} from '../attribute-helicopter/dto';
 import { User } from '../user/entities/user.entity';
 import { Gender } from '../../common/enums/gender.enum';
 import { AuthService } from '../../core/auth/auth.service';

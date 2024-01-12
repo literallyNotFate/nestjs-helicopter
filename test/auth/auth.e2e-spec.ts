@@ -3,9 +3,8 @@ import { Test } from '@nestjs/testing';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { AppModule } from '../../src/app.module';
 import { throwError } from 'rxjs';
-import { RegisterDto } from '../../src/core/auth/dto/register.dto';
+import { RegisterDto, LoginDto } from '../../src/core/auth/dto';
 import { AuthService } from '../../src/core/auth/auth.service';
-import { LoginDto } from '../../src/core/auth/dto/login.dto';
 
 describe('Auth (e2e)', () => {
   let app: INestApplication;

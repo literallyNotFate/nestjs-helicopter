@@ -4,7 +4,7 @@ import { AppModule } from '../../src/app.module';
 import { Test } from '@nestjs/testing';
 import { throwError } from 'rxjs';
 import { HelicopterService } from '../../src/module/helicopter/helicopter.service';
-import { RegisterDto } from '../../src/core/auth/dto/register.dto';
+import { RegisterDto } from '../../src/core/auth/dto';
 
 describe('Helicopter (e2e)', () => {
   let app: INestApplication;

@@ -4,7 +4,7 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import { AppModule } from '../../src/app.module';
 import { throwError } from 'rxjs';
 import { AttributeHelicopterService } from '../../src/module/attribute-helicopter/attribute-helicopter.service';
-import { RegisterDto } from '../../src/core/auth/dto/register.dto';
+import { RegisterDto } from '../../src/core/auth/dto';
 
 describe('Attribute Helicopter (e2e)', () => {
   let app: INestApplication;

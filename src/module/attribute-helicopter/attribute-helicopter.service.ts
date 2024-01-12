@@ -6,8 +6,12 @@ import {
   BadRequestException,
   Req,
 } from '@nestjs/common';
-import { CreateAttributeHelicopterDto } from './dto/create-attribute-helicopter.dto';
-import { UpdateAttributeHelicopterDto } from './dto/update-attribute-helicopter.dto';
+import {
+  UpdateAttributeHelicopterDto,
+  CreateAttributeHelicopterDto,
+  AttributeHelicopterResponseDto,
+} from './dto';
+
 import {
   Observable,
   catchError,
@@ -21,7 +25,6 @@ import { Repository, In } from 'typeorm';
 import { AttributeHelicopter } from './entities/attribute-helicopter.entity';
 import { Attribute } from '../attributes/entities/attribute.entity';
 import { Helicopter } from '../helicopter/entities/helicopter.entity';
-import { AttributeHelicopterResponseDto } from './dto/attribute-helicopter-response.dto';
 import { AuthService } from '../../core/auth/auth.service';
 import { User } from '../user/entities/user.entity';
 

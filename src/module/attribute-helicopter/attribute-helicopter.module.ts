@@ -7,7 +7,7 @@ import { Attribute } from '../attributes/entities/attribute.entity';
 import { Helicopter } from '../helicopter/entities/helicopter.entity';
 import { AuthModule } from '../../core/auth/auth.module';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
-import { AttributeHelicopterCreatorGuard } from '../../common/guards/attribute-helicopter-creator.guard';
+import { AttributeHelicopterCreatorGuard } from '../../common/guards';
 
 @Module({
   imports: [

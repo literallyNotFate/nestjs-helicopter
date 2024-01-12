@@ -12,17 +12,15 @@ import {
   Req,
 } from '@nestjs/common';
 import { HelicopterService } from './helicopter.service';
-import { CreateHelicopterDto } from './dto/create-helicopter.dto';
-import { UpdateHelicopterDto } from './dto/update-helicopter.dto';
 import {
   ApiOperation,
   ApiTags,
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { HelicopterDto } from './dto/helicopter.dto';
+import { HelicopterDto, CreateHelicopterDto, UpdateHelicopterDto } from './dto';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
-import { HelicopterCreatorGuard } from '../../common/guards/helicopter-creator.guard';
+import { HelicopterCreatorGuard } from '../../common/guards';
 
 @ApiTags('Helicopter')
 @ApiBearerAuth()

@@ -1,10 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/register.dto';
-import { TokensDto } from './dto/tokens.dto';
+import { RegisterDto, TokensDto, LoginDto } from './dto';
 import { of } from 'rxjs';
-import { LoginDto } from './dto/login.dto';
 import { UserRepository } from '../../module/user/user.repository';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../../module/user/entities/user.entity';

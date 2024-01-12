@@ -1,14 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { EngineController } from './engine.controller';
 import { EngineService } from './engine.service';
-import { CreateEngineDto } from './dto/create-engine.dto';
-import { EngineDto } from './dto/engine.dto';
+import { CreateEngineDto, EngineDto, UpdateEngineDto } from './dto';
 import { of } from 'rxjs';
-import { UpdateEngineDto } from './dto/update-engine.dto';
 import { Gender } from '../../common/enums/gender.enum';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
-import { EngineCreatorGuard } from '../../common/guards/engine-creator.guard';
-import { UserDto } from '../user/dto/user.dto';
+import { EngineCreatorGuard } from '../../common/guards';
+import { UserDto } from '../user/dto';
 import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { isGuarded } from '../../../test/utils';
 

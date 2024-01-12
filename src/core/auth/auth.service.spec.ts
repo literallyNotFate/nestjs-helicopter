@@ -1,8 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { UserRepository } from '../../module/user/user.repository';
-import { RegisterDto } from './dto/register.dto';
-import { TokensDto } from './dto/tokens.dto';
 import { of, throwError } from 'rxjs';
 import * as bcrypt from 'bcrypt';
 import { User } from '../../module/user/entities/user.entity';
@@ -10,7 +8,7 @@ import {
   BadRequestException,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { LoginDto } from './dto/login.dto';
+import { RegisterDto, TokensDto, LoginDto } from './dto';
 import { JwtService } from '@nestjs/jwt';
 
 describe('AuthService', () => {

@@ -1,17 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { CreateEngineDto, EngineDto, UpdateEngineDto } from './dto';
 import { EngineService } from './engine.service';
 import { Engine } from './entities/engine.entity';
 import { Helicopter } from '../helicopter/entities/helicopter.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { CreateEngineDto } from './dto/create-engine.dto';
 import { plainToInstance } from 'class-transformer';
-import { EngineDto } from './dto/engine.dto';
 import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { lastValueFrom, of, throwError } from 'rxjs';
-import { UpdateEngineDto } from './dto/update-engine.dto';
 import { AuthService } from '../../core/auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { UserRepository } from '../user/user.repository';

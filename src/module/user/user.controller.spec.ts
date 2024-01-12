@@ -2,10 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { Gender } from '../../common/enums/gender.enum';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UserDto } from './dto/user.dto';
+import { UserDto, CreateUserDto, UpdateUserDto } from './dto';
 import { of } from 'rxjs';
-import { UpdateUserDto } from './dto/update-user.dto';
 
 describe('UserController', () => {
   let controller: UserController;

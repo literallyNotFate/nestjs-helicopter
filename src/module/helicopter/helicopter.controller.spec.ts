@@ -1,17 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HelicopterController } from './helicopter.controller';
 import { HelicopterService } from './helicopter.service';
-import { CreateHelicopterDto } from './dto/create-helicopter.dto';
-import { HelicopterDto } from './dto/helicopter.dto';
+import { CreateHelicopterDto, HelicopterDto, UpdateHelicopterDto } from './dto';
 import { of } from 'rxjs';
-import { UpdateHelicopterDto } from './dto/update-helicopter.dto';
 import { User } from '../user/entities/user.entity';
 import { Gender } from '../../common/enums/gender.enum';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
-import { HelicopterCreatorGuard } from '../../common/guards/helicopter-creator.guard';
+import { HelicopterCreatorGuard } from '../../common/guards';
 import { plainToInstance } from 'class-transformer';
-import { UserDto } from '../user/dto/user.dto';
-import { AttributeHelicopterResponseDto } from '../attribute-helicopter/dto/attribute-helicopter-response.dto';
+import { UserDto } from '../user/dto';
+import { AttributeHelicopterResponseDto } from '../attribute-helicopter/dto';
 import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { isGuarded } from '../../../test/utils';
 

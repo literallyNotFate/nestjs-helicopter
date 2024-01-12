@@ -1,13 +1,13 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Request } from 'express';
-import { User } from '../../module/user/entities/user.entity';
+import { User } from '../../../module/user/entities/user.entity';
+import { HelicopterService } from '../../../module/helicopter/helicopter.service';
+import { HelicopterDto } from '../../../module/helicopter/dto/helicopter.dto';
 import { catchError, of, switchMap } from 'rxjs';
-import { EngineDto } from '../../module/engine/dto/engine.dto';
-import { EngineService } from '../../module/engine/engine.service';
 
 @Injectable()
-export class EngineCreatorGuard implements CanActivate {
-  constructor(private readonly engineService: EngineService) {}
+export class HelicopterCreatorGuard implements CanActivate {
+  constructor(private readonly helicopterService: HelicopterService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
@@ -15,15 +15,15 @@ export class EngineCreatorGuard implements CanActivate {
     const creator: User = request.user as User;
     const id: number = +request.params.id;
 
-    return this.engineService
+    return this.helicopterService
       .findOne(id)
       .pipe(
-        switchMap((engine: EngineDto) => {
-          if (!engine) {
+        switchMap((helicopter: HelicopterDto) => {
+          if (!helicopter) {
             return of(false);
           }
 
-          return of(engine.creator.id === creator.id);
+          return of(helicopter.creator.id === creator.id);
         }),
         catchError(() => of(false)),
       )

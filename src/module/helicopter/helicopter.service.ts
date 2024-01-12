@@ -8,8 +8,7 @@ import {
   InternalServerErrorException,
   Req,
 } from '@nestjs/common';
-import { CreateHelicopterDto } from './dto/create-helicopter.dto';
-import { UpdateHelicopterDto } from './dto/update-helicopter.dto';
+import { HelicopterDto, CreateHelicopterDto, UpdateHelicopterDto } from './dto';
 import { Helicopter } from './entities/helicopter.entity';
 import {
   Observable,
@@ -21,10 +20,9 @@ import {
   switchMap,
   toArray,
 } from 'rxjs';
-import { HelicopterDto } from './dto/helicopter.dto';
 import { Engine } from '../engine/entities/engine.entity';
 import { AttributeHelicopter } from '../attribute-helicopter/entities/attribute-helicopter.entity';
-import { AttributeHelicopterResponseDto } from '../attribute-helicopter/dto/attribute-helicopter-response.dto';
+import { AttributeHelicopterResponseDto } from '../attribute-helicopter/dto';
 import { User } from '../user/entities/user.entity';
 
 @Injectable()

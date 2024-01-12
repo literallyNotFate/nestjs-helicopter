@@ -9,10 +9,8 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UserDto, CreateUserDto, UpdateUserDto } from './dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { UserDto } from './dto/user.dto';
 import { Observable, from } from 'rxjs';
 
 @ApiTags('User')

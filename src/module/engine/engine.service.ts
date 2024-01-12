@@ -4,13 +4,11 @@ import {
   InternalServerErrorException,
   Req,
 } from '@nestjs/common';
-import { CreateEngineDto } from './dto/create-engine.dto';
-import { UpdateEngineDto } from './dto/update-engine.dto';
+import { CreateEngineDto, EngineDto, UpdateEngineDto } from './dto';
 import { Engine } from './entities/engine.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Observable, from, of } from 'rxjs';
-import { EngineDto } from './dto/engine.dto';
 import { catchError, concatMap, map, mergeMap, take } from 'rxjs/operators';
 import { plainToInstance } from 'class-transformer';
 import { Helicopter } from '../helicopter/entities/helicopter.entity';

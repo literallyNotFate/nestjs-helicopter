@@ -18,11 +18,9 @@ import {
   Req,
 } from '@nestjs/common';
 import { EngineService } from './engine.service';
-import { CreateEngineDto } from './dto/create-engine.dto';
-import { UpdateEngineDto } from './dto/update-engine.dto';
-import { EngineDto } from './dto/engine.dto';
+import { CreateEngineDto, EngineDto, UpdateEngineDto } from './dto';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
-import { EngineCreatorGuard } from '../../common/guards/engine-creator.guard';
+import { EngineCreatorGuard } from '../../common/guards';
 
 @ApiTags('Engine')
 @ApiBearerAuth()

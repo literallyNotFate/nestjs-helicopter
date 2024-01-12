@@ -1,18 +1,16 @@
 import { plainToInstance } from 'class-transformer';
 import { Test, TestingModule } from '@nestjs/testing';
+import { AttributesDto, CreateAttributeDto, UpdateAttributeDto } from './dto';
 import { AttributesController } from './attributes.controller';
 import { AttributesService } from './attributes.service';
-import { CreateAttributeDto } from './dto/create-attribute.dto';
-import { AttributesDto } from './dto/attributes.dto';
 import { of } from 'rxjs';
-import { UpdateAttributeDto } from './dto/update-attribute.dto';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
-import { AttributeCreatorGuard } from '../../common/guards/attribute-creator.guard';
+import { AttributeCreatorGuard } from '../../common/guards';
 import { Gender } from '../../common/enums/gender.enum';
 import { User } from '../user/entities/user.entity';
 import { Attribute } from './entities/attribute.entity';
 import { isGuarded } from '../../../test/utils';
-import { UserDto } from '../user/dto/user.dto';
+import { UserDto } from '../user/dto';
 import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 
 describe('AttributesController', () => {

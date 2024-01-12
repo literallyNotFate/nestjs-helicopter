@@ -1,4 +1,3 @@
-import { AttributesDto } from './dto/attributes.dto';
 import { plainToInstance } from 'class-transformer';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AttributesService } from './attributes.service';
@@ -9,8 +8,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateAttributeDto } from './dto/create-attribute.dto';
-import { UpdateAttributeDto } from './dto/update-attribute.dto';
+import { CreateAttributeDto, UpdateAttributeDto, AttributesDto } from './dto';
 import { User } from '../user/entities/user.entity';
 import { Gender } from '../../common/enums/gender.enum';
 import { AuthService } from '../../core/auth/auth.service';

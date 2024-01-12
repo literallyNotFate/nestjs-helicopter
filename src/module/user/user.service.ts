@@ -4,8 +4,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UserDto, CreateUserDto, UpdateUserDto } from './dto';
 import * as bcrypt from 'bcrypt';
 import {
   Observable,
@@ -22,11 +21,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
-import { UserDto } from './dto/user.dto';
-import { HelicopterDto } from '../helicopter/dto/helicopter.dto';
-import { EngineDto } from '../engine/dto/engine.dto';
-import { AttributesDto } from '../attributes/dto/attributes.dto';
-import { AttributeHelicopterResponseDto } from '../attribute-helicopter/dto/attribute-helicopter-response.dto';
+import { HelicopterDto } from '../helicopter/dto';
+import { EngineDto } from '../engine/dto';
+import { AttributesDto } from '../attributes/dto';
+import { AttributeHelicopterResponseDto } from '../attribute-helicopter/dto';
 import { Helicopter } from '../helicopter/entities/helicopter.entity';
 import { Engine } from '../engine/entities/engine.entity';
 import { AttributeHelicopter } from '../attribute-helicopter/entities/attribute-helicopter.entity';
