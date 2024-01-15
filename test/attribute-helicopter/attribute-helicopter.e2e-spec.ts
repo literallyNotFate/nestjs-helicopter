@@ -175,6 +175,39 @@ describe('Attribute Helicopter (e2e)', () => {
       });
     });
 
+    describe('GET /attribute-helicopter/creator', () => {
+      it(`should get all attribute helicopter of a creator (${HttpStatus.OK})`, async () => {
+        const response = await request(app.getHttpServer())
+          .get('/attribute-helicopter/creator')
+          .set('Authorization', `Bearer ${creator}`);
+
+        expect(response.status).toBe(HttpStatus.OK);
+        expect(response.body).toBeDefined();
+      });
+
+      it(`should throw UnathorizedException if user is not logged in while getting all attribute helicopter of a creator (${HttpStatus.UNAUTHORIZED})`, async () => {
+        const response = await request(app.getHttpServer()).get(
+          '/attribute-helicopter/creator',
+        );
+        expect(response.statusCode).toBe(HttpStatus.UNAUTHORIZED);
+      });
+
+      it(`should throw InternalServerErrorException (${HttpStatus.INTERNAL_SERVER_ERROR})`, async () => {
+        const service = app.get<AttributeHelicopterService>(
+          AttributeHelicopterService,
+        );
+        jest
+          .spyOn(service, 'findAllByCreator')
+          .mockReturnValue(throwError(new Error()));
+
+        const response = await request(app.getHttpServer())
+          .get('/attribute-helicopter/creator')
+          .set('Authorization', `Bearer ${creator}`);
+
+        expect(response.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+      });
+    });
+
     describe('GET /attribute-helicopter/:id', () => {
       it(`should get attribute helicopter by ID (${HttpStatus.OK})`, async () => {
         const response = await request(app.getHttpServer())

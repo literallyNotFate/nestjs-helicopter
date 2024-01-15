@@ -208,6 +208,33 @@ describe('Helicopter (e2e)', () => {
       });
     });
 
+    describe('GET /helicopter/creator', () => {
+      it(`should get all helicopters of a creator (${HttpStatus.OK})`, async () => {
+        const response = await request(app.getHttpServer())
+          .get('/helicopter/creator')
+          .set('Authorization', `Bearer ${creator}`);
+        expect(response.status).toBe(HttpStatus.OK);
+        expect(response.body).toBeDefined();
+      });
+
+      it(`should throw UnathorizedException if user is not logged in while getting all helicopters of a creator (${HttpStatus.UNAUTHORIZED})`, async () => {
+        const response = await request(app.getHttpServer()).get('/helicopter');
+        expect(response.statusCode).toBe(HttpStatus.UNAUTHORIZED);
+      });
+
+      it(`should throw InternalServerErrorException (${HttpStatus.INTERNAL_SERVER_ERROR})`, async () => {
+        const service = app.get<HelicopterService>(HelicopterService);
+        jest
+          .spyOn(service, 'findAllByCreator')
+          .mockReturnValue(throwError(new Error()));
+
+        const response = await request(app.getHttpServer())
+          .get('/helicopter/creator')
+          .set('Authorization', `Bearer ${creator}`);
+        expect(response.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+      });
+    });
+
     describe('GET /helicopter/:id', () => {
       it(`should get helicopter by ID (${HttpStatus.OK})`, async () => {
         const response = await request(app.getHttpServer())

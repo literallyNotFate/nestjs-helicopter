@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AttributesDto, CreateAttributeDto, UpdateAttributeDto } from './dto';
 import { AttributesController } from './attributes.controller';
 import { AttributesService } from './attributes.service';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 import { AttributeCreatorGuard } from '../../common/guards';
 import { Gender } from '../../common/enums/gender.enum';
@@ -20,6 +20,7 @@ describe('AttributesController', () => {
   const mockAttributeService = {
     create: jest.fn(),
     findAll: jest.fn(),
+    findAllByCreator: jest.fn(),
     findOne: jest.fn(),
     update: jest.fn(),
     remove: jest.fn(),
@@ -112,28 +113,12 @@ describe('AttributesController', () => {
   });
 
   describe('findAll', () => {
-    const user: UserDto = {
-      id: 1,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      firstName: 'data',
-      lastName: 'data',
-      email: 'data@gmail.com',
-      password: '$3124R$fv.xfsf',
-      gender: Gender.FEMALE,
-      phoneNumber: '12345',
-      attributes: [],
-      helicopters: [],
-      attributeHelicopters: [],
-      engines: [],
-    };
-
     const attribute: AttributesDto = {
       id: 1,
       name: 'Color',
       createdAt: new Date(),
       updatedAt: new Date(),
-      creator: user,
+      creator: plainToInstance(UserDto, user),
     };
 
     const attributes: AttributesDto[] = [attribute];
@@ -156,31 +141,51 @@ describe('AttributesController', () => {
     });
   });
 
-  describe('findOne', () => {
-    const attributeId: number = 1;
-
-    const user: UserDto = {
+  describe('findAllByCreator', () => {
+    const email: string = user.email;
+    const attribute: AttributesDto = {
       id: 1,
+      name: 'Color',
       createdAt: new Date(),
       updatedAt: new Date(),
-      firstName: 'data',
-      lastName: 'data',
-      email: 'data@gmail.com',
-      password: '$3124R$fv.xfsf',
-      gender: Gender.FEMALE,
-      phoneNumber: '12345',
-      attributes: [],
-      helicopters: [],
-      attributeHelicopters: [],
-      engines: [],
+      creator: plainToInstance(UserDto, user),
     };
+
+    const attributes: AttributesDto[] = [attribute];
+
+    it('should return all attributes of a creator', async () => {
+      jest.spyOn(service, 'findAllByCreator').mockReturnValue(of(attributes));
+
+      const result = await controller
+        .findAllByCreator({ user: { email } })
+        .toPromise();
+
+      expect(service.findAllByCreator).toHaveBeenCalled();
+      expect(result).toEqual(attributes);
+    });
+
+    it('should throw UnauthorizedException if user is not authenticated', async () => {
+      jest
+        .spyOn(service, 'findAllByCreator')
+        .mockImplementation(() => throwError(new UnauthorizedException()));
+
+      try {
+        await controller.findAllByCreator({ user: { email } });
+      } catch (error) {
+        expect(error).toBeInstanceOf(UnauthorizedException);
+      }
+    });
+  });
+
+  describe('findOne', () => {
+    const attributeId: number = 1;
 
     const attribute: AttributesDto = {
       id: attributeId,
       name: 'Color',
       createdAt: new Date(),
       updatedAt: new Date(),
-      creator: user,
+      creator: plainToInstance(UserDto, user),
     };
 
     it('should return attribute by ID', async () => {
@@ -209,28 +214,12 @@ describe('AttributesController', () => {
       name: 'edit',
     };
 
-    const user: UserDto = {
-      id: 1,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      firstName: 'data',
-      lastName: 'data',
-      email: 'data@gmail.com',
-      password: '$3124R$fv.xfsf',
-      gender: Gender.FEMALE,
-      phoneNumber: '12345',
-      attributes: [],
-      helicopters: [],
-      attributeHelicopters: [],
-      engines: [],
-    };
-
     const updatedAttribute: AttributesDto = {
       id: attributeId,
       name: updateAttributeDto.name,
       createdAt: new Date(),
       updatedAt: new Date(),
-      creator: user,
+      creator: plainToInstance(UserDto, user),
     };
 
     it('should update attribute by ID', async () => {

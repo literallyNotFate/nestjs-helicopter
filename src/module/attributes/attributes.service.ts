@@ -64,6 +64,24 @@ export class AttributesService {
     );
   }
 
+  findAllByCreator(email: string): Observable<AttributesDto[]> {
+    return from(
+      this.attributeRepository.find({
+        relations: ['creator'],
+        where: { creator: { email } },
+      }),
+    ).pipe(
+      map((attributes: Attribute[]) =>
+        plainToInstance(AttributesDto, attributes),
+      ),
+      catchError(() => {
+        throw new InternalServerErrorException(
+          `Failed to get all attributes of creator: ${email}.`,
+        );
+      }),
+    );
+  }
+
   findOne(id: number): Observable<AttributesDto> {
     return from(
       this.attributeRepository.findOne({

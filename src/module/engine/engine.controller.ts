@@ -59,6 +59,22 @@ export class EngineController {
     return from(this.engineService.findAll());
   }
 
+  @ApiOperation({ summary: 'Endpoint to get all engines of a creator' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Got all engines of a creator',
+    type: [EngineDto],
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: 'Failed to get engines of a creator',
+  })
+  @Get('/creator')
+  findAllByCreator(@Req() request): Observable<EngineDto[]> {
+    const email: string = request.user.email;
+    return from(this.engineService.findAllByCreator(email));
+  }
+
   @ApiOperation({ summary: 'Endpoint to get engine by ID' })
   @ApiResponse({
     status: HttpStatus.OK,

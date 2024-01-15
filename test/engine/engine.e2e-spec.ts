@@ -140,6 +140,35 @@ describe('Engine (e2e)', () => {
       });
     });
 
+    describe('GET /engine/creator', () => {
+      it(`should get all engines of a creator (${HttpStatus.OK})`, async () => {
+        const response = await request(app.getHttpServer())
+          .get('/engine/creator')
+          .set('Authorization', `Bearer ${creator}`);
+        expect(response.status).toBe(HttpStatus.OK);
+        expect(response.body).toBeDefined();
+      });
+
+      it(`should throw UnathorizedException if user is not logged in while getting all engines of a creator (${HttpStatus.UNAUTHORIZED})`, async () => {
+        const response = await request(app.getHttpServer()).get(
+          '/engine/creator',
+        );
+        expect(response.statusCode).toBe(HttpStatus.UNAUTHORIZED);
+      });
+
+      it(`should throw InternalServerErrorException (${HttpStatus.INTERNAL_SERVER_ERROR})`, async () => {
+        const service = app.get<EngineService>(EngineService);
+        jest
+          .spyOn(service, 'findAllByCreator')
+          .mockReturnValue(throwError(new Error()));
+
+        const response = await request(app.getHttpServer())
+          .get('/engine/creator')
+          .set('Authorization', `Bearer ${creator}`);
+        expect(response.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+      });
+    });
+
     describe('GET /engine/:id', () => {
       it(`should get engine by ID (${HttpStatus.OK})`, async () => {
         const response = await request(app.getHttpServer())

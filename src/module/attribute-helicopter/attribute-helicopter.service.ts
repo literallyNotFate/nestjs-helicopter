@@ -110,6 +110,28 @@ export class AttributeHelicopterService {
     );
   }
 
+  findAllByCreator(
+    email: string,
+  ): Observable<AttributeHelicopterResponseDto[]> {
+    return from(
+      this.attributeHelicopterRepository.find({
+        relations: ['attributes', 'helicopters', 'creator'],
+        where: { creator: { email } },
+      }),
+    ).pipe(
+      map((ats: AttributeHelicopter[]) => {
+        return ats.map((attributeHelicopter: AttributeHelicopter) =>
+          AttributeHelicopterResponseDto.ToResponse(attributeHelicopter),
+        );
+      }),
+      catchError(() => {
+        throw new InternalServerErrorException(
+          `Failed to get all helicopter attributes of a creator: ${email}`,
+        );
+      }),
+    );
+  }
+
   findOne(id: number): Observable<AttributeHelicopterResponseDto> {
     return from(
       this.attributeHelicopterRepository.findOne({

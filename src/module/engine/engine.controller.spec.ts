@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { EngineController } from './engine.controller';
 import { EngineService } from './engine.service';
 import { CreateEngineDto, EngineDto, UpdateEngineDto } from './dto';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { Gender } from '../../common/enums/gender.enum';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 import { EngineCreatorGuard } from '../../common/guards';
@@ -17,6 +17,7 @@ describe('EngineController', () => {
   const mockEngineService = {
     create: jest.fn(),
     findAll: jest.fn(),
+    findAllByCreator: jest.fn(),
     findOne: jest.fn(),
     update: jest.fn(),
     remove: jest.fn(),
@@ -140,6 +141,47 @@ describe('EngineController', () => {
     it('should throw UnauthorizedException if user is not authenticated', async () => {
       try {
         await controller.findAll();
+      } catch (error) {
+        expect(error).toBeInstanceOf(UnauthorizedException);
+      }
+    });
+  });
+
+  describe('findAllByCreator', () => {
+    const email: string = user.email;
+
+    const engine: EngineDto = {
+      id: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      name: 'Engine',
+      year: 2023,
+      model: 'Model',
+      hp: 500,
+      helicopters: [],
+      creator: user,
+    };
+
+    const engines: EngineDto[] = [engine];
+
+    it('should return all engines of a creator', async () => {
+      jest.spyOn(service, 'findAllByCreator').mockReturnValueOnce(of(engines));
+
+      const result = await controller
+        .findAllByCreator({ user: { email } })
+        .toPromise();
+
+      expect(service.findAllByCreator).toHaveBeenCalled();
+      expect(result).toEqual(engines);
+    });
+
+    it('should throw UnauthorizedException if user is not authenticated', async () => {
+      jest
+        .spyOn(service, 'findAllByCreator')
+        .mockImplementation(() => throwError(new UnauthorizedException()));
+
+      try {
+        await controller.findAllByCreator({ user: { email } });
       } catch (error) {
         expect(error).toBeInstanceOf(UnauthorizedException);
       }

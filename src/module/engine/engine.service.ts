@@ -63,6 +63,26 @@ export class EngineService {
     );
   }
 
+  findAllByCreator(email: string): Observable<EngineDto[]> {
+    return from(
+      this.engineRepository.find({
+        relations: [
+          'helicopters',
+          'helicopters.attributeHelicopter',
+          'creator',
+        ],
+        where: { creator: { email } },
+      }),
+    ).pipe(
+      map((engines: Engine[]) => plainToInstance(EngineDto, engines)),
+      catchError(() => {
+        throw new InternalServerErrorException(
+          `Failed to get engines of a creator: ${email}.`,
+        );
+      }),
+    );
+  }
+
   findOne(id: number): Observable<EngineDto> {
     return from(
       this.engineRepository.findOne({

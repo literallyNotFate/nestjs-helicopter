@@ -5,7 +5,7 @@ import { AttributeHelicopterController } from './attribute-helicopter.controller
 import { AttributeHelicopterService } from './attribute-helicopter.service';
 import { Attribute } from '../attributes/entities/attribute.entity';
 import { AttributeHelicopter } from './entities/attribute-helicopter.entity';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import {
   UpdateAttributeHelicopterDto,
   CreateAttributeHelicopterDto,
@@ -25,6 +25,7 @@ describe('AttributeHelicopterController', () => {
   const mockAttributeHelicopterService = {
     create: jest.fn(),
     findAll: jest.fn(),
+    findAllByCreator: jest.fn(),
     findOne: jest.fn(),
     update: jest.fn(),
     remove: jest.fn(),
@@ -170,6 +171,45 @@ describe('AttributeHelicopterController', () => {
     it('should throw UnauthorizedException if user is not authenticated', async () => {
       try {
         await controller.findAll();
+      } catch (error) {
+        expect(error).toBeInstanceOf(UnauthorizedException);
+      }
+    });
+  });
+
+  describe('findAllByCreator', () => {
+    const email: string = user.email;
+    const expectedResponse: AttributeHelicopterResponseDto = {
+      id: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      attributes: [],
+      helicopters: [],
+      creator: plainToInstance(UserDto, user),
+    };
+
+    const attributeHelicopters = [expectedResponse];
+
+    it('should return all attribute helicopters of a creator', async () => {
+      jest
+        .spyOn(service, 'findAllByCreator')
+        .mockReturnValue(of(attributeHelicopters));
+
+      const result = await controller
+        .findAllByCreator({ user: { email } })
+        .toPromise();
+
+      expect(service.findAllByCreator).toHaveBeenCalled();
+      expect(result).toEqual(attributeHelicopters);
+    });
+
+    it('should throw UnauthorizedException if user is not authenticated', async () => {
+      jest
+        .spyOn(service, 'findAllByCreator')
+        .mockImplementation(() => throwError(new UnauthorizedException()));
+
+      try {
+        await controller.findAllByCreator({ user: { email } });
       } catch (error) {
         expect(error).toBeInstanceOf(UnauthorizedException);
       }

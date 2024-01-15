@@ -73,6 +73,26 @@ export class AttributeHelicopterController {
     return from(this.attributeHelicopterService.findAll());
   }
 
+  @ApiOperation({
+    summary: 'Endpoint to get all helicopter attributes of a creator',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Got all helicopter attributes of a creator',
+    type: [AttributeHelicopterResponseDto],
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: 'Failed to get helicopter attributes of a creator',
+  })
+  @Get()
+  findAllByCreator(
+    @Req() request,
+  ): Observable<AttributeHelicopterResponseDto[]> {
+    const email: string = request.user.email;
+    return from(this.attributeHelicopterService.findAllByCreator(email));
+  }
+
   @ApiOperation({ summary: 'Endpoint to get helicopter attribute by ID' })
   @ApiResponse({
     status: HttpStatus.OK,

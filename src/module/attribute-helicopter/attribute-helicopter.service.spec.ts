@@ -35,6 +35,7 @@ describe('AttributeHelicopterService', () => {
     create: jest.fn(),
     save: jest.fn(),
     find: jest.fn(),
+    findAllByCreator: jest.fn(),
     findOne: jest.fn(),
     remove: jest.fn(),
     merge: jest.fn(),
@@ -354,6 +355,59 @@ describe('AttributeHelicopterService', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(InternalServerErrorException);
         expect(error.message).toBe('Failed to get all helicopter attributes');
+      }
+    });
+  });
+
+  describe('findAllByCreator', () => {
+    const email: string = user.email;
+    const attribute: AttributeHelicopter = {
+      id: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      attributes: [],
+      values: [],
+      helicopters: [],
+      creator: user,
+    };
+
+    const expectedResponse: AttributeHelicopterResponseDto = {
+      id: attribute.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      attributes: [],
+      helicopters: [],
+      creator: plainToInstance(UserDto, user),
+    };
+
+    const attributes = [attribute];
+    const attributeHelicopters = [expectedResponse];
+
+    it('should find all attribute helicopters of a creator', async () => {
+      mockAttributeHelicopterRepository.find.mockResolvedValue(attributes);
+
+      const result = await service.findAllByCreator(email).toPromise();
+
+      expect(result).toEqual(attributeHelicopters);
+
+      expect(mockAttributeHelicopterRepository.find).toHaveBeenCalledWith({
+        relations: ['attributes', 'helicopters', 'creator'],
+        where: { creator: { email } },
+      });
+    });
+
+    it('should throw InternalServerErrorException if an error occurs', async () => {
+      jest
+        .spyOn(mockAttributeHelicopterRepository, 'find')
+        .mockResolvedValue(undefined);
+
+      try {
+        await service.findAllByCreator(email);
+      } catch (error) {
+        expect(error).toBeInstanceOf(InternalServerErrorException);
+        expect(error.message).toBe(
+          'Failed to get all helicopter attributes of a creator',
+        );
       }
     });
   });

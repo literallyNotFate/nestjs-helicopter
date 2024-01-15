@@ -182,7 +182,53 @@ describe('EngineService', () => {
         await service.findAll();
       } catch (error) {
         expect(error).toBeInstanceOf(InternalServerErrorException);
-        expect(error.message).toBe('Failed to get all attributes.');
+        expect(error.message).toBe('Failed to get all engines.');
+      }
+    });
+  });
+
+  describe('findAllByCreator', () => {
+    const email: string = user.email;
+
+    const engineResult: Engine = {
+      id: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      name: 'Engine',
+      year: 2023,
+      model: 'Model',
+      hp: 500,
+      helicopters: [],
+      creator: user,
+    };
+
+    it('should find all engines of a creator', async () => {
+      const engines = [engineResult];
+
+      jest.spyOn(mockEngineRepository, 'find').mockResolvedValue(engines);
+
+      const find = service.findAllByCreator(email);
+      const result = await lastValueFrom(find);
+
+      expect(result).toEqual(plainToInstance(EngineDto, engines));
+      expect(mockEngineRepository.find).toHaveBeenCalledWith({
+        relations: [
+          'helicopters',
+          'helicopters.attributeHelicopter',
+          'creator',
+        ],
+        where: { creator: { email } },
+      });
+    });
+
+    it('should throw InternalServerErrorException if an error occurs', async () => {
+      jest.spyOn(mockEngineRepository, 'find').mockResolvedValue(undefined);
+
+      try {
+        await service.findAllByCreator(email);
+      } catch (error) {
+        expect(error).toBeInstanceOf(InternalServerErrorException);
+        expect(error.message).toBe('Failed to get all engines of a creator.');
       }
     });
   });

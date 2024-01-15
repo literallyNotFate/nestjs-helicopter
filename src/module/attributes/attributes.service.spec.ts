@@ -179,6 +179,47 @@ describe('AttributesService', () => {
     });
   });
 
+  describe('findAllByCreator', () => {
+    const email: string = user.email;
+
+    const attributeResult: Attribute = {
+      id: 1,
+      name: 'Color',
+      attributeHelicopters: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      creator: user,
+    };
+
+    it('should find all attributes of a creator', async () => {
+      const attributes = [attributeResult];
+
+      jest.spyOn(mockAttributeRepository, 'find').mockResolvedValue(attributes);
+
+      const find = service.findAllByCreator(email);
+      const result = await lastValueFrom(find);
+
+      expect(result).toEqual(plainToInstance(AttributesDto, attributes));
+      expect(mockAttributeRepository.find).toHaveBeenCalledWith({
+        relations: ['creator'],
+        where: { creator: { email } },
+      });
+    });
+
+    it('should throw InternalServerErrorException if an error occurs', async () => {
+      jest.spyOn(mockAttributeRepository, 'find').mockResolvedValue(undefined);
+
+      try {
+        await service.findAllByCreator(email);
+      } catch (error) {
+        expect(error).toBeInstanceOf(InternalServerErrorException);
+        expect(error.message).toBe(
+          'Failed to get all attributes of a creator.',
+        );
+      }
+    });
+  });
+
   describe('findOne', () => {
     const attributeId: number = 1;
 

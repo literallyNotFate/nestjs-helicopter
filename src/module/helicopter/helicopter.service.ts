@@ -151,6 +151,52 @@ export class HelicopterService {
     );
   }
 
+  findAllByCreator(email: string): Observable<HelicopterDto[]> {
+    return from(
+      this.helicopterRepository.find({
+        relations: ['creator'],
+        where: { creator: { email } },
+      }),
+    ).pipe(
+      mergeMap((helicopters: Helicopter[]) =>
+        from(helicopters).pipe(
+          mergeMap((helicopter: Helicopter) =>
+            from(
+              this.attributeHelicopterRepository.findOne({
+                where: { id: helicopter.attributeHelicopterId },
+                relations: ['attributes', 'creator'],
+              }),
+            ).pipe(
+              map((attributeHelicopter: AttributeHelicopter) => {
+                const helicopterDto = plainToInstance(
+                  HelicopterDto,
+                  helicopter,
+                );
+
+                if (attributeHelicopter) {
+                  const attributeHelicopterResponse =
+                    AttributeHelicopterResponseDto.ToResponse(
+                      attributeHelicopter,
+                    );
+                  helicopterDto.attributeHelicopter =
+                    attributeHelicopterResponse;
+                }
+
+                return helicopterDto;
+              }),
+            ),
+          ),
+        ),
+      ),
+      toArray(),
+      catchError(() => {
+        throw new InternalServerErrorException(
+          `Failed to get all helicopters of a creator: ${email}`,
+        );
+      }),
+    );
+  }
+
   findOne(id: number): Observable<HelicopterDto> {
     return from(
       this.helicopterRepository.findOne({

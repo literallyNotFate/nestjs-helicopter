@@ -62,6 +62,22 @@ export class HelicopterController {
     return from(this.helicopterService.findAll());
   }
 
+  @ApiOperation({ summary: 'Endpoint to get all helicopters of a creator' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Got all helicopters of a creator',
+    type: [HelicopterDto],
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: 'Failed to get helicopters of a creator',
+  })
+  @Get('/creator')
+  findAllByCreator(@Req() request): Observable<HelicopterDto[]> {
+    const email: string = request.user.email;
+    return from(this.helicopterService.findAllByCreator(email));
+  }
+
   @ApiOperation({ summary: 'Endpoint to get helicopter by ID' })
   @ApiResponse({
     status: HttpStatus.OK,

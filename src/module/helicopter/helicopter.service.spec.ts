@@ -356,6 +356,87 @@ describe('HelicopterService', () => {
     });
   });
 
+  describe('findAllByCreator', () => {
+    const email: string = user.email;
+    const attributeHelicopterId: number = 1;
+
+    const attributeHelicopter = {
+      id: attributeHelicopterId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      value: '',
+      attributeId: 1,
+      attribute: {
+        id: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        name: 'Attribute',
+        helicopters: [],
+        creator: user,
+      },
+      creator: user,
+    };
+
+    const helicopter: HelicopterDto = {
+      id: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      model: 'ABC-1101',
+      year: 2023,
+      engineId: 1,
+      engine: {
+        id: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        name: 'Engine XYZ',
+        year: 2023,
+        model: 'Model ABC',
+        hp: 300,
+        helicopters: [],
+        creator: plainToInstance(UserDto, user),
+      },
+      attributeHelicopterId,
+      attributeHelicopter: {
+        id: attributeHelicopterId,
+        createdAt: attributeHelicopter.createdAt,
+        updatedAt: attributeHelicopter.updatedAt,
+        attributes: [],
+        helicopters: [],
+        creator: plainToInstance(UserDto, user),
+      },
+      creator: plainToInstance(UserDto, user),
+    };
+
+    const helicopters = [helicopter];
+
+    it('should find all helicopters of a creator', async () => {
+      jest
+        .spyOn(mockHelicopterRepository, 'find')
+        .mockReturnValue(of(helicopters));
+
+      jest
+        .spyOn(attributeHelicopterRepository, 'findOne')
+        .mockReturnValue(of(attributeHelicopter));
+
+      const result = await service.findAllByCreator(email).toPromise();
+
+      expect(result).toMatchObject(helicopters);
+    });
+
+    it('should throw InternalServerErrorException if an error occurs', async () => {
+      jest.spyOn(mockHelicopterRepository, 'find').mockResolvedValue(undefined);
+
+      try {
+        await service.findAllByCreator(email);
+      } catch (error) {
+        expect(error).toBeInstanceOf(InternalServerErrorException);
+        expect(error.message).toBe(
+          'Failed to get all helicopters of a creator.',
+        );
+      }
+    });
+  });
+
   describe('findOne', () => {
     const helicopterId: number = 1;
     const engineId: number = 1;

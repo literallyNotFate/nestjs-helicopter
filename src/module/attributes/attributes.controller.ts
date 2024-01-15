@@ -62,6 +62,22 @@ export class AttributesController {
     return from(this.attributesService.findAll());
   }
 
+  @ApiOperation({ summary: 'Endpoint to get all attributes of a creator' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Got all attributes of a creator',
+    type: [AttributesDto],
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: 'Failed to get attributes of a creator',
+  })
+  @Get('/creator')
+  findAllByCreator(@Req() request): Observable<AttributesDto[]> {
+    const email: string = request.user.email;
+    return from(this.attributesService.findAllByCreator(email));
+  }
+
   @ApiOperation({ summary: 'Endpoint to get attribute by ID' })
   @ApiResponse({
     status: HttpStatus.OK,
